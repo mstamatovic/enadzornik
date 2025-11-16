@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <title>Registracija</title>
+</head>
+<body>
+<h2>Registracija</h2>
+<form id="registerForm">
+    <p>
+        <label>Ime: <input type="text" id="ime" required></label>
+    </p>
+    <p>
+        <label>Prezime: <input type="text" id="prezime" required></label>
+    </p>
+    <p>
+        <label>Email: <input type="email" id="email" required></label>
+    </p>
+    <p>
+        <label>Lozinka: <input type="password" id="password" required></label>
+    </p>
+    <p>
+        <label>Uloga:
+            <select id="uloga" required>
+                <option value="nastavnik">Nastavnik</option>
+                <option value="supervizor">Supervizor</option>
+                <option value="admin">Admin</option>
+            </select>
+        </label>
+    </p>
+    <p>
+        <label>Škola:
+            <select id="skolaId" required>
+                <!-- Popunićemo dinamički -->
+            </select>
+        </label>
+    </p>
+    <button type="submit">Registruj se</button>
+</form>
+<p id="message" style="color: green;"></p>
+<a href="index.html">Nazad</a>
+
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
