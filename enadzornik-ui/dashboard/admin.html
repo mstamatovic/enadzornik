@@ -2,17 +2,91 @@
 <html lang="sr">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Panel</title>
+    <title>Admin</title>
+    <style>
+        body {
+            display: none;
+            font-family: Arial;
+            margin: 20px;
+        }
+
+        .header {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        (function () {
+            const token = localStorage.getItem('jwtToken');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                console.log('Token payload:', payload); // DEBUG
+
+                if (payload.role !== 'admin') {
+                    if (payload.role === 'nastavnik') window.location.href = 'nastavnik.html';
+                    else if (payload.role === 'supervizor') window.location.href = 'supervizor.html';
+                    else window.location.href = '../login.html';
+                    return;
+                }
+
+                // Bezbedniji pristup - koristite email ako ime/prezime ne postoje
+                const displayName = payload.ime && payload.prezime
+                    ? payload.ime + ' ' + payload.prezime
+                    : payload.email || 'Admin';
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    document.getElementById('ime').textContent = displayName;
+                    document.body.style.display = 'block';
+                });
+
+            } catch (e) {
+                console.error('Greška pri parsiranju tokena:', e);
+                localStorage.removeItem('jwtToken');
+                window.location.href = '../login.html';
+            }
+        })();
+    </script>
 </head>
 <body>
-<h1>Admin Panel</h1>
-<p>Dobrodošli, <span id="imePrezime">...</span>!</p>
+<div class="header">
+    <h1>Admin Panel</h1>
+    <p>Dobrodošli, <span id="ime"></span>!</p>
+</div>
+
+<h2>Funkcije:</h2>
 <ul>
-    <li><a href="#">Upravljanje korisnicima</a></li>
-    <li><a href="#">Upravljanje školama</a></li>
-    <li><a href="#">Pregled svih materijala</a></li>
-    <li><a href="#" onclick="logout()">Odjavi se</a></li>
+    <li>Upravljanje korisnicima</li>
+    <li>Upravljanje školama</li>
+    <li>Pregled svih materijala</li>
 </ul>
-<script src="script.js"></script>
+
+<button onclick="logout()">Odjavi se</button>
+
+<script>
+    function logout() {
+        localStorage.removeItem('jwtToken');
+        window.location.href = '../login.html';
+    }
+
+    // Dodatna provera kada se strana učita
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('Admin strana učítana');
+    });
+</script>
 </body>
 </html>

@@ -3,44 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <title>Registracija</title>
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 500px;
+            margin: 50px auto;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #27ae60;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #message {
+            color: green;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
 <h2>Registracija</h2>
 <form id="registerForm">
-    <p>
-        <label>Ime: <input type="text" id="ime" required></label>
-    </p>
-    <p>
-        <label>Prezime: <input type="text" id="prezime" required></label>
-    </p>
-    <p>
-        <label>Email: <input type="email" id="email" required></label>
-    </p>
-    <p>
-        <label>Lozinka: <input type="password" id="password" required></label>
-    </p>
-    <p>
-        <label>Uloga:
-            <select id="uloga" required>
-                <option value="nastavnik">Nastavnik</option>
-                <option value="supervizor">Supervizor</option>
-                <option value="admin">Admin</option>
-            </select>
-        </label>
-    </p>
-    <p>
-        <label>Škola:
-            <select id="skolaId" required>
-                <!-- Popunićemo dinamički -->
-            </select>
-        </label>
-    </p>
+    <input type="text" id="ime" placeholder="Ime" required>
+    <input type="text" id="prezime" placeholder="Prezime" required>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Lozinka" required>
+    <select id="uloga">
+        <option value="nastavnik">Nastavnik</option>
+        <option value="supervizor">Supervizor</option>
+        <option value="admin">Admin</option>
+    </select>
+    <select id="skolaId"></select>
     <button type="submit">Registruj se</button>
 </form>
-<p id="message" style="color: green;"></p>
+<p id="message"></p>
 <a href="index.html">Nazad</a>
 
-<script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

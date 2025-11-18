@@ -3,16 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <title>Supervizor</title>
+    <style>
+        body {
+            display: none;
+            font-family: Arial;
+            margin: 20px;
+        }
+        .header {
+            background: #F54242;
+            color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        (function() {
+            const token = localStorage.getItem('jwtToken');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                console.log('Token payload:', payload);
+
+                if (payload.role !== 'supervizor') {
+                    if (payload.role === 'admin') window.location.href = 'admin.html';
+                    else if (payload.role === 'nastavnik') window.location.href = 'nastavnik.html';
+                    else window.location.href = '../login.html';
+                    return;
+                }
+
+                const displayName = payload.ime && payload.prezime
+                    ? payload.ime + ' ' + payload.prezime
+                    : payload.email || 'Supervizor';
+
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.getElementById('ime').textContent = displayName;
+                    document.body.style.display = 'block';
+                });
+
+            } catch (e) {
+                console.error('Greška pri parsiranju tokena:', e);
+                localStorage.removeItem('jwtToken');
+                window.location.href = '../login.html';
+            }
+        })();
+    </script>
 </head>
 <body>
-<h1>Supervizor panel</h1>
-<p>Dobrodošli, <span id="imePrezime">...</span>!</p>
+<div class="header">
+    <h1>Supervizor Panel</h1>
+    <p>Dobrodošli, <span id="ime"></span>!</p>
+</div>
+
+<h2>Funkcije:</h2>
 <ul>
-    <li><a href="#">Pregled svih materijala</a></li>
-    <li><a href="#">Evaluacija materijala</a></li>
-    <li><a href="#">Izveštaji</a></li>
-    <li><a href="#" onclick="logout()">Odjavi se</a></li>
+    <li>Pregled materijala</li>
+    <li>Evaluacija</li>
+    <li>Izveštaji</li>
 </ul>
-<script src="../script.js"></script>
+
+<button onclick="logout()">Odjavi se</button>
+
+<script>
+    function logout() {
+        localStorage.removeItem('jwtToken');
+        window.location.href = '../login.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Supervizor strana učítana');
+    });
+</script>
 </body>
 </html>

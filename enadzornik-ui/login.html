@@ -3,23 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 500px;
+            margin: 50px auto;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #message {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
 <h2>Login</h2>
 <form id="loginForm">
-    <p>
-        <label>Email: <input type="email" id="email" required></label>
-    </p>
-    <p>
-        <label>Lozinka: <input type="password" id="password" required></label>
-    </p>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Lozinka" required>
     <button type="submit">Uloguj se</button>
 </form>
-<p id="message" style="color: green;"></p>
-<div id="token" style="word-break: break-all; margin-top: 10px;"></div>
-<a href="index.html">Nazad</a>
-
-<script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+<p id="message"></p>
+<a href="register.html">Registruj se</a>
 <script src="script.js"></script>
 </body>
 </html>

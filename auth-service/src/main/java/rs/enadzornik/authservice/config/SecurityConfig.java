@@ -25,14 +25,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http
-//                .cors().and()               // Omogući CORS
-//                .csrf().disable()           // Isključi CSRF (nije potreban za JWT)
-//                .authorizeHttpRequests(authz -> authz
-//                        .requestMatchers("/api/v1/auth/**").permitAll()
-//                        .anyRequest().authenticated()
-//                );
-
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
@@ -44,17 +36,6 @@ public class SecurityConfig {
     }
 
     // Novo: CORS konfiguracija
-//    @Bean
-//    public CorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration config = new CorsConfiguration();
-//        config.setAllowedOrigins(Arrays.asList("null", "file://")); // dozvoljava file://
-//        config.setAllowedMethods(Arrays.asList("GET", "POST"));
-//        config.setAllowedHeaders(Arrays.asList("*"));
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/api/v1/auth/**", config);
-//        return source;
-//    }
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
