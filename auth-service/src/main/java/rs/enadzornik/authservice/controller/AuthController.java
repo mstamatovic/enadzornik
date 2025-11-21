@@ -4,9 +4,11 @@ package rs.enadzornik.authservice.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import rs.enadzornik.authservice.dto.KorisnikDto;
 import rs.enadzornik.authservice.entity.Korisnik;
 import rs.enadzornik.authservice.entity.Skola;
 import rs.enadzornik.authservice.entity.UlogaKorisnika;
+import rs.enadzornik.authservice.repository.KorisnikRepozitorijum;
 import rs.enadzornik.authservice.repository.SkolaRepozitorijum;
 import rs.enadzornik.authservice.security.JwtUtil;
 import rs.enadzornik.authservice.service.AuthService;
@@ -23,6 +25,7 @@ public class AuthController {
     private final AuthService authService;
     private final JwtUtil jwtUtil;
     private final SkolaRepozitorijum skolaRepozitorijum;
+    private final KorisnikRepozitorijum korisnikRepozitorijum;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
@@ -140,5 +143,13 @@ public class AuthController {
         public String getToken() {
             return token;
         }
+    }
+
+
+    @GetMapping("/internal/korisnik/{id}")
+    public KorisnikDto getKorisnikById(@PathVariable Integer id) {
+        Korisnik k = korisnikRepozitorijum.findById(id)
+                .orElseThrow(() -> new RuntimeException("Korisnik nije pronađen"));
+        return new KorisnikDto(k.getKorisnikId(), k.getUlogaKorisnika());
     }
 }
