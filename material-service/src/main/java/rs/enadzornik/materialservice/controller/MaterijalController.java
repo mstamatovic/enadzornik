@@ -27,17 +27,6 @@ public class MaterijalController {
     private final AuthClient authClient;
     private final JwtUtil jwtUtil;
 
-    // Pomoćna metoda za ekstrakciju korisnika iz tokena
-//    private KorisnikDto getCurrentUser(String authHeader) {
-//        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-//            throw new RuntimeException("Nedostaje JWT token");
-//        }
-//        String token = authHeader.substring(7);
-//        // Ovde bi trebalo da dekodiraš token (kao u auth-service)
-//        // Za pojednostavljivanje, pretpostavićemo da korisnik šalje korisnikId u headeru
-//        // U produkciji: koristi JWTUtil klasu iz auth-service (možeš je izdvojiti u zajedničku biblioteku)
-//        throw new UnsupportedOperationException("JWT parsing nije implementiran");
-//    }
 
     private JwtKorisnik getCurrentUser(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -80,7 +69,6 @@ public class MaterijalController {
         materijal.setDatumCasa(request.getDatumCasa());
         materijal.setDatumUploada(LocalDateTime.now());
         materijal.setMesecPlaniranja(request.getMesecPlaniranja());
-//        materijal.setNastavnikId(korisnikId);
         materijal.setStatus(Status.na_cekanju);
         materijal.setNastavnikId(currentUser.korisnikId());
         materijal.setStatus(Status.na_cekanju);
@@ -98,7 +86,6 @@ public class MaterijalController {
         if (currentUser.uloga() == UlogaKorisnika.nastavnik) {
             materijali = materijalRepozitorijum.findByNastavnikId(currentUser.korisnikId());
         } else {
-            // supervizor ili admin
             materijali = materijalRepozitorijum.findAll();
         }
 

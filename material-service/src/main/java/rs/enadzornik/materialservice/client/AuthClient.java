@@ -9,11 +9,5 @@ import rs.enadzornik.materialservice.dto.KorisnikDto;
 @FeignClient(name = "auth-service", url = "http://localhost:8083")
 public interface AuthClient {
     @GetMapping("/api/v1/auth/internal/korisnik/{id}")
-    KorisnikDto getKorisnikById(@PathVariable("id") Long id);
+    KorisnikDto getKorisnikById(@PathVariable("id") Integer id);
 }
-
-//@FeignClient(name = "auth-service", url = "${auth.service.url:http://localhost:8081}")
-//public interface AuthClient {
-//    @GetMapping("/api/v1/auth/internal/korisnik/{id}")
-//    KorisnikDto getKorisnikById(@PathVariable("id") Long id);
-//}
