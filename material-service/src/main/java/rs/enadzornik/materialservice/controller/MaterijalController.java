@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.enadzornik.materialservice.client.AuthClient;
-import rs.enadzornik.materialservice.dto.KorisnikDto;
 import rs.enadzornik.materialservice.dto.MaterijalRequest;
 import rs.enadzornik.materialservice.entity.Materijal;
 import rs.enadzornik.materialservice.entity.Status;
