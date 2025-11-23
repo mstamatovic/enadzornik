@@ -1,88 +1,201 @@
 <!DOCTYPE html>
 <html lang="sr">
 <head>
-  <meta charset="UTF-8">
-  <title>Nastavnik</title>
-  <style>
-    body {
-      display: none;
-      font-family: Arial;
-      margin: 20px;
-    }
-    .header {
-      background: #2ecc71;
-      color: white;
-      padding: 15px;
-      margin-bottom: 20px;
-    }
-    button {
-      background: #e74c3c;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      cursor: pointer;
-    }
-  </style>
-  <script>
-    (function() {
-      const token = localStorage.getItem('jwtToken');
-      if (!token) {
-        window.location.href = '../login.html';
-        return;
-      }
-
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        console.log('Token payload:', payload);
-
-        if (payload.role !== 'nastavnik') {
-          if (payload.role === 'admin') window.location.href = 'admin.html';
-          else if (payload.role === 'supervizor') window.location.href = 'supervizor.html';
-          else window.location.href = '../login.html';
-          return;
+    <meta charset="UTF-8">
+    <title>Nastavnik</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
         }
 
-        const displayName = payload.ime && payload.prezime
-                ? payload.ime + ' ' + payload.prezime
-                : payload.email || 'Nastavnik';
+        .header {
+            background: #27ae60;
+            color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
 
-        document.addEventListener('DOMContentLoaded', function() {
-          document.getElementById('ime').textContent = displayName;
-          document.body.style.display = 'block';
-        });
+        form {
+            margin-bottom: 30px;
+        }
 
-      } catch (e) {
-        console.error('Greška pri parsiranju tokena:', e);
-        localStorage.removeItem('jwtToken');
-        window.location.href = '../login.html';
-      }
-    })();
-  </script>
+        label {
+            display: block;
+            margin: 8px 0 4px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: #27ae60;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #219653;
+        }
+
+        #uploadMessage {
+            color: green;
+            margin-top: 10px;
+        }
+
+        #uploadMessage.error {
+            color: red;
+        }
+
+        .materijal {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    </style>
 </head>
 <body>
 <div class="header">
-  <h1>Nastavnik Panel</h1>
-  <p>Dobrodošli, <span id="ime"></span>!</p>
+    <h1>📘 Prostor za nastavnike</h1>
+    <p>Dobrodošli, <span id="imePrezime"></span>!</p>
 </div>
 
-<h2>Funkcije:</h2>
-<ul>
-  <li>Upload priprema</li>
-  <li>Upload planova</li>
-  <li>Moji materijali</li>
-</ul>
+<!-- Upload forma -->
+<h2>Upload materijala</h2>
+<form id="uploadForm">
+    <label>Naslov: <input type="text" id="naslov" required></label>
+    <label>Tip materijala:
+        <select id="tipMaterijala" required>
+            <option value="priprema">Priprema za čas</option>
+            <option value="mesecni_plan">Mesečni plan</option>
+            <option value="video_snimak">Video snimak</option>
+        </select>
+    </label>
+    <label>Fajl: <input type="file" id="fajl" accept=".pdf,.mp4" required></label>
+    <label>Predmet: <input type="text" id="predmet" required></label>
+    <label>Razred: <input type="text" id="razred" required></label>
+    <label>Datum časa (za pripreme/video): <input type="date" id="datumCasa"></label>
+    <label>Mesec planiranja (za mesečne planove): <input type="month" id="mesecPlaniranja"></label>
+    <button type="submit">Upload</button>
+</form>
+<p id="uploadMessage"></p>
 
+<!-- Lista materijala -->
+<h2>Moji materijali</h2>
+<div id="materijali"></div>
+
+<!-- Logout dugme -->
 <button onclick="logout()">Odjavi se</button>
 
 <script>
-  function logout() {
-    localStorage.removeItem('jwtToken');
-    window.location.href = '../login.html';
-  }
+    // Prikaži ime korisnika
+    document.getElementById('imePrezime').textContent =
+        localStorage.getItem('korisnikImePrezime') || 'Nastavnik';
 
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log('Nastavnik strana učítana');
-  });
+    // Upload fajla + metapodaci
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById('uploadMessage');
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            msg.textContent = 'Nisi ulogovan!';
+            msg.className = 'error';
+            return;
+        }
+
+        const fajl = document.getElementById('fajl').files[0];
+        if (!fajl) {
+            msg.textContent = 'Izaberi fajl!';
+            msg.className = 'error';
+            return;
+        }
+
+        try {
+            // 1. Upload fajla → file-service
+            const formData = new FormData();
+            formData.append('file', fajl);
+            const fileRes = await fetch('http://localhost:8085/api/v1/files/upload', {
+                method: 'POST',
+                headers: {'Authorization': 'Bearer ' + token},
+                body: formData
+            });
+            const fileData = await fileRes.json();
+            if (!fileRes.ok) throw new Error('Greška pri uploadu fajla');
+
+            // 2. Pošalji metapodatke → material-service
+            const metapodaci = {
+                naslov: document.getElementById('naslov').value,
+                tipMaterijala: document.getElementById('tipMaterijala').value,
+                format: fajl.name.split('.').pop().toLowerCase(),
+                putanjaFajla: fileData.filePath,
+                velicinaMb: (fajl.size / (1024 * 1024)).toFixed(2),
+                predmet: document.getElementById('predmet').value,
+                razred: document.getElementById('razred').value,
+                datumCasa: document.getElementById('datumCasa').value || null,
+                mesecPlaniranja: (() => {
+                    const val = document.getElementById('mesecPlaniranja').value;
+                    return val ? val + "-01" : null;
+                })()
+            };
+
+            const metaRes = await fetch('http://localhost:8084/api/v1/material', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(metapodaci)
+            });
+
+            if (metaRes.ok) {
+                msg.textContent = 'Uspešno uploadovano!';
+                msg.className = '';
+                document.getElementById('uploadForm').reset();
+                loadMaterijali(); // Osvježi listu
+            } else {
+                const err = await metaRes.json();
+                throw new Error(err.message || 'Greška pri čuvanju metapodataka');
+            }
+        } catch (err) {
+            msg.textContent = 'Greška: ' + err.message;
+            msg.className = 'error';
+            console.error(err);
+        }
+    });
+
+    // Učitaj materijale
+    async function loadMaterijali() {
+        const token = localStorage.getItem('jwtToken');
+        const res = await fetch('http://localhost:8084/api/v1/material', {
+            headers: {'Authorization': 'Bearer ' + token}
+        });
+        const materijali = await res.json();
+        const container = document.getElementById('materijali');
+        container.innerHTML = materijali.map(m => `
+        <div class="materijal">
+          <h3>${m.naslov}</h3>
+          <p><strong>Tip:</strong> ${m.tipMaterijala}</p>
+          <p><strong>Fajl:</strong> ${m.putanjaFajla}</p>
+          <p><strong>Predmet:</strong> ${m.predmet} | <strong>Razred:</strong> ${m.razred}</p>
+          <a href="http://localhost:8085/api/v1/files/download/${m.putanjaFajla}" target="_blank">Preuzmi</a>
+        </div>
+      `).join('');
+    }
+
+    // Logout
+    function logout() {
+        localStorage.removeItem('jwtToken');
+        localStorage.removeItem('korisnikImePrezime');
+        window.location.href = '../login.html';
+    }
+
+    // Inicijalno učitavanje
+    loadMaterijali();
 </script>
 </body>
 </html>

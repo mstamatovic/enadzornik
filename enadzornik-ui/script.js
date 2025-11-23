@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.setItem('jwtToken', data.token);
                     const payload = JSON.parse(atob(data.token.split('.')[1]));
                     const role = payload.role;
+                    const displayName = (payload.ime || '') + ' ' + (payload.prezime || '');
+                    localStorage.setItem('korisnikImePrezime', displayName.trim() || 'Korisnik');
 
                     const pages = {
                         'admin': 'dashboard/admin.html',

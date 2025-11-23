@@ -20,7 +20,7 @@ public class JwtUtil {
     public JwtUtil(@Value("${jwt.secret:enadzornikSuperSecureSecretKey1234567890!@#}") String secret,
                    @Value("${jwt.expiration:86400000}") long expiration) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
-            this.jwtExpirationMs = expiration;
+        this.jwtExpirationMs = expiration;
     }
 
     public String generateToken(Korisnik korisnik) {
@@ -41,21 +41,4 @@ public class JwtUtil {
                 .signWith(secretKey)
                 .compact();
     }
-
-//    public Boolean validateToken(String token) {
-//        try {
-//            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
-//            return true;
-//        } catch (Exception e) {
-//            return false;
-//        }
-//    }
-//
-//    public Claims getClaims(String token) {
-//        return Jwts.parserBuilder()
-//                .setSigningKey(secretKey)
-//                .build()
-//                .parseClaimsJws(token)
-//                .getBody();
-//    }
 }

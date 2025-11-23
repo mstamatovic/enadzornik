@@ -16,6 +16,7 @@ import java.nio.file.Path;
 @RestController
 @RequestMapping("/api/v1/files")
 @RequiredArgsConstructor
+//@CrossOrigin(origins = "http://localhost:8000/")
 public class FileController {
 
     private final FileStorageService fileStorageService;
