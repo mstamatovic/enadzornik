@@ -182,7 +182,9 @@
           <p><strong>Tip:</strong> ${m.tipMaterijala}</p>
           <p><strong>Fajl:</strong> ${m.putanjaFajla}</p>
           <p><strong>Predmet:</strong> ${m.predmet} | <strong>Razred:</strong> ${m.razred}</p>
-          <a href="http://localhost:8085/api/v1/files/download/${m.putanjaFajla}" target="_blank">Preuzmi</a>
+<!--          <a href="http://localhost:8085/api/v1/files/download/${m.putanjaFajla}" target="_blank">Preuzmi</a>-->
+<!-- Umesto: <a href="...">Preuzmi</a> -->
+<button onclick="downloadFile('${m.putanjaFajla}')">Preuzmi</button>
         </div>
       `).join('');
     }
@@ -196,6 +198,40 @@
 
     // Inicijalno učitavanje
     loadMaterijali();
+
+    async function downloadFile(filename) {
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            alert('Nisi ulogovan!');
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8085/api/v1/files/download/${filename}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            } else {
+                alert('Greška pri preuzimanju: ' + response.status);
+            }
+        } catch (err) {
+            console.error('Download greška:', err);
+            alert('Greška: ' + err.message);
+        }
+    }
 </script>
 </body>
 </html>
