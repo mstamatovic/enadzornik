@@ -55,20 +55,22 @@
         </dependencies>
     </dependencyManagement>
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>3.5.7</version>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-        </plugins>
+        <pluginManagement> <!-- KLJUČNA IZMENA -->
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version> <!-- koristi istu verziju kao i SB -->
+                    <configuration>
+                        <excludes>
+                            <exclude>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                            </exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 </project>

@@ -1,0 +1,87 @@
+services:
+  mariadb:
+    image: mariadb:11.8.2
+    container_name: enadzornik-mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: enadzornik
+      MARIADB_USER: enadzornik
+      MARIADB_PASSWORD: enadzornik
+    ports:
+      - "3307:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - /Users/mstamatovic/java-projects/enadzornik/init.sql:/docker-entrypoint-initdb.d/init.sql
+    #      - /Users/mstamatovic/java-projects/enadzornik
+    #      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - enadzornik-network
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    container_name: enadzornik-auth-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/enadzornik?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: enadzornik
+      SPRING_DATASOURCE_PASSWORD: enadzornik
+    depends_on:
+      - mariadb
+    #        condition: service_healthy
+    networks:
+      - enadzornik-network
+    restart: on-failure
+
+#  material-service:
+#    build:
+#      context: ./material-service
+#      dockerfile: Dockerfile
+#    container_name: enadzornik-material-service
+#    ports:
+#      - "8084:8084"
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/enadzornik?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+#      SPRING_DATASOURCE_USERNAME: enadzornik
+#      SPRING_DATASOURCE_PASSWORD: enadzornik
+#    depends_on:
+#      mariadb:
+#        condition: service_healthy
+#    networks:
+#      - enadzornik-network
+#    restart: unless-stopped
+#
+#  file-service:
+#    build:
+#      context: ./file-service
+#      dockerfile: Dockerfile
+#    container_name: enadzornik-file-service
+#    ports:
+#      - "8085:8085"
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/enadzornik?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+#      SPRING_DATASOURCE_USERNAME: enadzornik
+#      SPRING_DATASOURCE_PASSWORD: enadzornik
+#    volumes:
+#      - file_uploads:/app/uploads
+#    depends_on:
+#      mariadb:
+#        condition: service_healthy
+#    networks:
+#      - enadzornik-network
+#    restart: unless-stopped
+
+networks:
+  enadzornik-network:
+    driver: bridge
+
+volumes:
+  mariadb_data:
+  file_uploads:

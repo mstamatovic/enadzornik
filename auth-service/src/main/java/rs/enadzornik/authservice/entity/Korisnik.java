@@ -23,17 +23,17 @@ public class Korisnik {
     @Column(name = "prezime_korisnika", nullable = false, length = 50)
     private String prezimeKorisnika;
 
-    @Column(unique = true, nullable = false, length = 100)
+    @Column(name = "email", unique = true, nullable = false, length = 100)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "lozinka", nullable = false)
     private String lozinka; // BCrypt enkriptovana
 
     @Enumerated(EnumType.STRING)
     @Column(name = "uloga_korisnika", nullable = false)
     private UlogaKorisnika ulogaKorisnika;
 
-    @Column(nullable = false)
+    @Column(name = "aktivan", nullable = false, columnDefinition = "TINYINT(1)")
     private Boolean aktivan = true;
 
     @CreationTimestamp
