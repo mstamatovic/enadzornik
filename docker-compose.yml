@@ -54,30 +54,48 @@ services:
     depends_on:
       - auth-service
       - mariadb
-#        condition: service_healthy
+    #        condition: service_healthy
     networks:
       - enadzornik-network
     restart: unless-stopped
 
-#  file-service:
-#    build:
-#      context: ./file-service
-#      dockerfile: Dockerfile
-#    container_name: enadzornik-file-service
-#    ports:
-#      - "8085:8085"
-#    environment:
-#      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/enadzornik?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-#      SPRING_DATASOURCE_USERNAME: enadzornik
-#      SPRING_DATASOURCE_PASSWORD: enadzornik
-#    volumes:
-#      - file_uploads:/app/uploads
-#    depends_on:
-#      mariadb:
-#        condition: service_healthy
-#    networks:
-#      - enadzornik-network
-#    restart: unless-stopped
+  file-service:
+    build:
+      context: .
+      dockerfile: file-service/Dockerfile
+    container_name: enadzornik-file-service
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/enadzornik?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: enadzornik
+      SPRING_DATASOURCE_PASSWORD: enadzornik
+    volumes:
+      - file_uploads:/app/uploads
+    depends_on:
+      - mariadb
+    #        condition: service_healthy
+    networks:
+      - enadzornik-network
+    restart: unless-stopped
+
+  audit-service:
+    build:
+      context: .
+      dockerfile: audit-service/Dockerfile
+    container_name: enadzornik-audit-service
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/enadzornik?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: enadzornik
+      SPRING_DATASOURCE_PASSWORD: enadzornik
+    depends_on:
+      - mariadb
+    #        condition: service_healthy
+    networks:
+      - enadzornik-network
+    restart: unless-stopped
 
 networks:
   enadzornik-network:
