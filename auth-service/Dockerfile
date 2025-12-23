@@ -26,10 +26,10 @@ WORKDIR /app
 
 # Copy the built jar from build stage
 #COPY --from=build /app/target/*.jar app.jar
-COPY --from=build /app/auth-service/target/*.jar app.jar
+COPY --from=build /app/auth-service/target/*.jar auth-service.jar
 
 # Expose the port
 EXPOSE 8083
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "auth-service.jar"]

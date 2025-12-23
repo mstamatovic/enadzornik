@@ -6,7 +6,7 @@ import rs.enadzornik.auditservice.entity.AuditEvent;
 import rs.enadzornik.auditservice.repository.AuditRepository;
 
 @RestController
-@RequestMapping("/api/audit")
+@RequestMapping("/api/v1/audit")
 public class AuditController {
 
     private final AuditRepository auditRepository;

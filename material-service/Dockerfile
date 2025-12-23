@@ -26,10 +26,10 @@ WORKDIR /app
 
 # Copy the built jar from build stage
 #COPY --from=build /app/target/*.jar app.jar
-COPY --from=build /app/material-service/target/*.jar app.jar
+COPY --from=build /app/material-service/target/*.jar material-service.jar
 
 # Expose the port
 EXPOSE 8084
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "material-service.jar"]

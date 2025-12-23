@@ -97,6 +97,26 @@ services:
       - enadzornik-network
     restart: unless-stopped
 
+  evaluation-service:
+    build:
+      context: .
+      dockerfile: evaluation-service/Dockerfile
+    container_name: enadzornik-evaluation-service
+    ports:
+      - "8087:8087"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/enadzornik?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: enadzornik
+      SPRING_DATASOURCE_PASSWORD: enadzornik
+    depends_on:
+      material-service:
+        condition: service_started
+#      - mariadb
+    #        condition: service_healthy
+    networks:
+      - enadzornik-network
+    restart: unless-stopped
+
 networks:
   enadzornik-network:
     driver: bridge

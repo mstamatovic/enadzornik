@@ -26,10 +26,10 @@ WORKDIR /app
 
 # Copy the built jar from build stage
 #COPY --from=build /app/target/*.jar app.jar
-COPY --from=build /app/file-service/target/*.jar file-service.jar
+COPY --from=build /app/evaluation-service/target/*.jar evaluation-service.jar
 
 # Expose the port
-EXPOSE 8085
+EXPOSE 8087
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "file-service.jar"]
+ENTRYPOINT ["java", "-jar", "evaluation-service.jar"]
