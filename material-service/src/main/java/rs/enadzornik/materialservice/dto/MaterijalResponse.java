@@ -15,7 +15,7 @@ public class MaterijalResponse {
     private String format;
     private Double velicinaMb;
     private LocalDateTime datumUploada;
-    private Long nastavnikId;
+    private Integer nastavnikId;
     private String predmet;
     private String razred;
     private String nastavnaJedinica;

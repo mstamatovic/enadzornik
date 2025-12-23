@@ -7,15 +7,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.enadzornik.materialservice.client.AuthClient;
 import rs.enadzornik.materialservice.dto.MaterijalRequest;
+import rs.enadzornik.materialservice.dto.StatusUpdateRequest;
 import rs.enadzornik.materialservice.entity.Materijal;
 import rs.enadzornik.materialservice.entity.Status;
 import rs.enadzornik.materialservice.entity.UlogaKorisnika;
+import rs.enadzornik.materialservice.repository.EvaluacijaRepozitorijum;
+import rs.enadzornik.materialservice.repository.IstorijaPromenaRepozitorijum;
 import rs.enadzornik.materialservice.repository.MaterijalRepozitorijum;
 import rs.enadzornik.materialservice.security.JwtUtil;
+import rs.enadzornik.materialservice.entity.Evaluacija;
+import rs.enadzornik.materialservice.entity.IstorijaPromena;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/material")
@@ -25,6 +31,8 @@ public class MaterijalController {
     private final MaterijalRepozitorijum materijalRepozitorijum;
     private final AuthClient authClient;
     private final JwtUtil jwtUtil;
+    private final EvaluacijaRepozitorijum evaluacijaRepozitorijum;
+    private final IstorijaPromenaRepozitorijum istorijaPromenaRepozitorijum;
 
 
     private JwtKorisnik getCurrentUser(String authHeader) {
@@ -47,9 +55,7 @@ public class MaterijalController {
     }
 
     @PostMapping
-    public ResponseEntity<Materijal> uploadMaterijal(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestBody MaterijalRequest request) {
+    public ResponseEntity<Materijal> uploadMaterijal(@RequestHeader("Authorization") String authHeader, @RequestBody MaterijalRequest request) {
 
         var currentUser = getCurrentUser(authHeader);
         if (currentUser.uloga() != UlogaKorisnika.nastavnik) {
@@ -76,8 +82,7 @@ public class MaterijalController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Materijal>> getMaterijali(
-            @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<List<Materijal>> getMaterijali(@RequestHeader("Authorization") String authHeader) {
 
         var currentUser = getCurrentUser(authHeader);
         List<Materijal> materijali;
@@ -89,5 +94,84 @@ public class MaterijalController {
         }
 
         return ResponseEntity.ok(materijali);
+    }
+
+    @PostMapping("/{id}/status")
+    public ResponseEntity<Void> updateStatus(
+            @PathVariable("id") Integer id,
+            @RequestBody StatusUpdateRequest request
+    ) {
+        System.out.println(">>> Primljen zahtev: id=" + id + ", status=" + request.getStatus() + ", evaluatorId=" + request.getEvaluatorId());
+
+        // 1. Konverzija statusa
+        Status noviStatus;
+        try {
+            noviStatus = Status.valueOf(request.getStatus());
+            System.out.println(">>> Status konvertovan: " + noviStatus);
+        } catch (Exception e) {
+            System.err.println(">>> Greška u statusu: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+
+        // 2. Provera materijala
+        Optional<Materijal> materijalOpt = materijalRepozitorijum.findById(id);
+        if (materijalOpt.isEmpty()) {
+            System.out.println(">>> Materijal nije pronađen");
+            return ResponseEntity.notFound().build();
+        }
+
+        // 3. Ažuriranje materijala
+        try {
+            Materijal materijal = materijalOpt.get();
+            materijal.setStatus(noviStatus);
+            materijal.setPoslednjiIzmenioStatus(request.getEvaluatorId());
+            materijalRepozitorijum.save(materijal);
+            System.out.println(">>> Materijal ažuriran");
+        } catch (Exception e) {
+            System.err.println(">>> Greška pri ažuriranju materijala: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+
+        // 4. Proveri da li već postoji evaluacija
+        Optional<Evaluacija> postojecaEvaluacija = evaluacijaRepozitorijum
+                .findByMaterijalIdAndEvaluatorId(id, request.getEvaluatorId());
+
+        Evaluacija evaluacija;
+        if (postojecaEvaluacija.isPresent()) {
+            // Ažuriraj postojeću
+            evaluacija = postojecaEvaluacija.get();
+            evaluacija.setStatus(request.getStatus());
+            evaluacija.setNapomena(request.getNapomena());
+            System.out.println(">>> Evaluacija ažurirana");
+        } else {
+            // Kreiraj novu
+            evaluacija = new Evaluacija();
+            evaluacija.setMaterijalId(id);
+            evaluacija.setEvaluatorId(request.getEvaluatorId());
+            evaluacija.setStatus(request.getStatus());
+            evaluacija.setNapomena(request.getNapomena());
+            evaluacija.setDatumEvaluacije(LocalDateTime.now());
+            System.out.println(">>> Evaluacija kreirana");
+        }
+        evaluacijaRepozitorijum.save(evaluacija);
+
+        // 5. Unos u istoriju (uvek novi red)
+        try {
+            IstorijaPromena istorija = new IstorijaPromena();
+            istorija.setMaterijalId(id);
+            istorija.setStariStatus(String.valueOf(materijalOpt.get().getStatus()));
+            istorija.setNoviStatus(request.getStatus());
+            istorija.setIzmenioId(request.getEvaluatorId());
+            istorija.setNapomena(request.getNapomena());
+            istorijaPromenaRepozitorijum.save(istorija);
+            System.out.println(">>> Istorija sačuvana");
+        } catch (Exception e) {
+            System.err.println(">>> Greška u istoriji: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+
+        return ResponseEntity.ok().build();
     }
 }
