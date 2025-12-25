@@ -150,6 +150,14 @@ public class AuthController {
     public KorisnikDto getKorisnikById(@PathVariable Integer id) {
         Korisnik k = korisnikRepozitorijum.findById(id)
                 .orElseThrow(() -> new RuntimeException("Korisnik nije pronađen"));
-        return new KorisnikDto(k.getKorisnikId(), k.getUlogaKorisnika());
+//        return new KorisnikDto(k.getKorisnikId(), k.getUlogaKorisnika());
+        KorisnikDto dto = new KorisnikDto();
+        dto.setKorisnikId(k.getKorisnikId());
+        dto.setUloga(k.getUlogaKorisnika());
+        dto.setImeKorisnika(k.getImeKorisnika());
+        dto.setPrezimeKorisnika(k.getPrezimeKorisnika());
+        dto.setEmail(k.getEmail());
+
+        return dto;
     }
 }

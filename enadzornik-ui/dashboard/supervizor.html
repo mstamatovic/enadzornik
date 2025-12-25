@@ -2,87 +2,703 @@
 <html lang="sr">
 <head>
     <meta charset="UTF-8">
-    <title>Supervizor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervizor — eNadzornik</title>
     <style>
+        :root {
+            --primary: #c0392b;
+            --primary-light: #e74c3c;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --border: #e0e0e0;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            display: none;
-            font-family: Arial;
-            margin: 20px;
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            display: none; /* ← PRIKAZUJE SE NAKON INICIJALIZACIJE */
         }
+
         .header {
-            background: #F54242;
+            background: var(--primary);
             color: white;
-            padding: 15px;
-            margin-bottom: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        button {
-            background: #e74c3c;
+
+        .filters {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .filters h3 {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 15px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .materijal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .materijal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .materijal-naslov {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .materijal-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .preview-container {
+            margin: 15px 0;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            background: #f0f0f0;
+            height: 300px;
+        }
+
+        .preview-container iframe,
+        .preview-container video {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .eval-form {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .eval-form textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin: 8px 0;
+            font-size: 14px;
+            height: 80px;
+        }
+
+        .eval-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-na_cekanju {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-potvrdjen {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-odbijen {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .message-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .message-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .logout-btn {
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 10px 15px;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 600;
             cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .fullscreen-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: white;
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .fullscreen-modal iframe,
+        .fullscreen-modal embed,
+        .fullscreen-modal video {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #f0f0f0;
+        }
+
+        .fullscreen-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 10001;
         }
     </style>
-    <script>
-        (function() {
-            const token = localStorage.getItem('jwtToken');
-            if (!token) {
+</head>
+<body>
+<div class="header">
+    <h1>📘 Supervizor Panel</h1>
+    <p>Dobrodošli, <span id="ime"></span>!</p>
+</div>
+
+<div class="filters">
+    <h3>🔍 Filteri</h3>
+    <div class="filter-row">
+        <div class="filter-group">
+            <label for="filterPredmet">Predmet</label>
+            <input type="text" id="filterPredmet" placeholder="Npr. Matematika...">
+        </div>
+        <div class="filter-group">
+            <label for="filterRazred">Razred</label>
+            <input type="text" id="filterRazred" placeholder="Npr. 5, V, ...">
+        </div>
+        <div class="filter-group">
+            <label for="filterNaslov">Naslov</label>
+            <input type="text" id="filterNaslov" placeholder="Deo naslova...">
+        </div>
+        <div class="filter-group">
+            <label for="filterStatus">Status</label>
+            <select id="filterStatus">
+                <option value="">Svi statusi</option>
+                <option value="na_cekanju">Na čekanju</option>
+                <option value="potvrdjen">Odobren</option>
+                <option value="odbijen">Odbijen</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div id="materijali">
+    <p>Učitavanje...</p>
+</div>
+
+<button class="logout-btn" onclick="logout()">Odjavi se</button>
+
+<script>
+    let KORISNIK_TOKEN = localStorage.getItem('jwtToken');
+    let KORISNIK_ID = null;
+    let SVI_MATERIJALI = [];
+
+    // Inicijalizacija
+    (function () {
+        if (!KORISNIK_TOKEN) {
+            window.location.href = '../login.html';
+            return;
+        }
+
+        try {
+            const payload = JSON.parse(atob(KORISNIK_TOKEN.split('.')[1]));
+            KORISNIK_ID = payload.korisnikId;
+
+            if (payload.role !== 'supervizor') {
+                // Ako nije supervizor, redirektujemo (ako postoje stranice)
                 window.location.href = '../login.html';
                 return;
             }
 
-            try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                console.log('Token payload:', payload);
+            const displayName = payload.ime && payload.prezime
+                ? payload.ime + ' ' + payload.prezime
+                : payload.email || 'Supervizor';
+            document.getElementById('ime').textContent = displayName;
 
-                if (payload.role !== 'supervizor') {
-                    if (payload.role === 'admin') window.location.href = 'admin.html';
-                    else if (payload.role === 'nastavnik') window.location.href = 'nastavnik.html';
-                    else window.location.href = '../login.html';
-                    return;
-                }
+            // Učitaj materijale i prikaži stranicu
+            loadMaterijale().then(() => {
+                renderMaterijale();
+                initFilterEvents();
+                document.body.style.display = 'block'; // ← KLJUČNO: PRIKAZUJE SE OVDE
+            });
+        } catch (e) {
+            console.error('Greška pri inicijalizaciji:', e);
+            alert('Greška pri učitavanju. Pokušajte ponovo.');
+            localStorage.removeItem('jwtToken');
+            window.location.href = '../login.html';
+        }
+    })();
 
-                const displayName = payload.ime && payload.prezime
-                    ? payload.ime + ' ' + payload.prezime
-                    : payload.email || 'Supervizor';
+    // Učitaj materijale
+    async function loadMaterijale() {
+        try {
+            const res = await fetch('http://localhost:8084/api/v1/material', {
+                headers: {'Authorization': 'Bearer ' + KORISNIK_TOKEN}
+            });
+            if (!res.ok) throw new Error('Neuspešno učitavanje materijala');
+            SVI_MATERIJALI = await res.json();
+        } catch (err) {
+            console.error('Greška:', err);
+            document.getElementById('materijali').innerHTML = '<p style="color:red;">Greška pri učitavanju materijala. Proverite konzolu.</p>';
+            throw err;
+        }
+    }
 
-                document.addEventListener('DOMContentLoaded', function() {
-                    document.getElementById('ime').textContent = displayName;
-                    document.body.style.display = 'block';
-                });
+    // Filtriranje
+    function filtrirajMaterijale() {
+        const predmet = document.getElementById('filterPredmet').value.toLowerCase();
+        const razred = document.getElementById('filterRazred').value.toLowerCase();
+        const naslov = document.getElementById('filterNaslov').value.toLowerCase();
+        const status = document.getElementById('filterStatus').value;
 
-            } catch (e) {
-                console.error('Greška pri parsiranju tokena:', e);
-                localStorage.removeItem('jwtToken');
-                window.location.href = '../login.html';
+        return SVI_MATERIJALI.filter(m => {
+            if (status && m.status !== status) return false;
+            if (predmet && !m.predmet.toLowerCase().includes(predmet)) return false;
+            if (razred && !m.razred.toLowerCase().includes(razred)) return false;
+            if (naslov && !m.naslov.toLowerCase().includes(naslov)) return false;
+            return true;
+        });
+    }
+
+    // Render
+    //     function renderMaterijale() {
+    //         const filtrirani = filtrirajMaterijale();
+    //         const container = document.getElementById('materijali');
+    //
+    //         if (filtrirani.length === 0) {
+    //             container.innerHTML = '<p style="padding: 20px; text-align: center; color: #666;">Nema materijala koji odgovaraju filterima.</p>';
+    //             return;
+    //         }
+    //
+    //         container.innerHTML = filtrirani.map(m => {
+    //             // Preview
+    //             let previewHtml = '';
+    //             if (m.format === 'pdf') {
+    //                 previewHtml = `<iframe src="http://localhost:8085/api/v1/files/download/${m.putanjaFajla}" title="Pregled PDF-a"></iframe>`;
+    //             } else if (m.format === 'mp4') {
+    //                 previewHtml = `<video controls style="width:100%; height:100%;"><source src="http://localhost:8085/api/v1/files/download/${m.putanjaFajla}" type="video/mp4">Video nije podržan.</video>`;
+    //             } else {
+    //                 previewHtml = `<div style="padding: 40px; text-align: center; color: #666;">Pregled nije dostupan.</div>`;
+    //             }
+    //
+    //             // Status
+    //             const statusMap = {na_cekanju: 'Na čekanju', potvrdjen: 'Odobren', odbijen: 'Odbijen'};
+    //             const statusClass = `status-${m.status}`;
+    //
+    //             return `
+    //                 <div class="materijal-card">
+    //                     <div class="materijal-header">
+    //                         <div>
+    //                             <div class="materijal-naslov">${m.naslov}</div>
+    //                             <span class="status-badge ${statusClass}">${statusMap[m.status]}</span>
+    //                         </div>
+    //                     </div>
+    //                     <div class="materijal-meta">
+    //                         <strong>Predmet:</strong> ${m.predmet} |
+    //                         <strong>Razred:</strong> ${m.razred} |
+    //                         <strong>Tip:</strong> ${m.tipMaterijala} |
+    //                         <br><strong>Nastavnik ID:</strong> ${m.nastavnikId} |
+    //                         <strong>Datum:</strong> ${new Date(m.datumUploada).toLocaleDateString('sr-RS')}
+    //                     </div>
+    //
+    //                     <div class="preview-container">
+    //                         ${previewHtml}
+    //                     </div>
+    //
+    //                     ${m.status === 'na_cekanju' ? `
+    //                     <div class="eval-form">
+    //                         <textarea id="napomena-${m.materijalId}" placeholder="Unesite napomenu (obavezno ako odbijate)"></textarea>
+    //                         <div class="eval-buttons">
+    //                             <button class="btn btn-success" onclick="oceniMaterijal(${m.materijalId}, 'potvrdjen')"> Odobri</button>
+    //                             <button class="btn btn-danger" onclick="oceniMaterijal(${m.materijalId}, 'odbijen')"> Odbij</button>
+    //                         </div>
+    //
+    // <!--                        ${previewHtml}-->
+    //
+    //                         <div style="text-align: right; margin-top: 10px;">
+    //                              <button class="btn" onclick="openFullscreenPreview('${m.putanjaFajla}', '${m.format}')">🖥️ Prikaz u celom ekranu</button>
+    //                         </div>
+    //                         <div id="eval-msg-${m.materijalId}" class="message" style="display: none;"></div>
+    //                     </div>
+    //                     ` : m.napomena ? `<div class="message message-error"><strong>Razlog:</strong> ${m.napomena}</div>` : ''}
+    //                 </div>
+    //
+    //                 `;
+    //         }).join('');
+    //     }
+    // Renderuj materijale
+    // Renderuj materijale
+    function renderMaterijale() {
+        const filtrirani = filtrirajMaterijale();
+        const container = document.getElementById('materijali');
+
+        if (filtrirani.length === 0) {
+            container.innerHTML = '<p style="padding: 20px; text-align: center; color: #666;">Nema materijala koji odgovaraju filterima.</p>';
+            return;
+        }
+
+        // Mapiranje statusa za prikaz
+        const statusMap = {
+            na_cekanju: 'Na čekanju',
+            potvrdjen: 'Odobren',
+            odbijen: 'Odbijen'
+        };
+        const statusClass = {
+            na_cekanju: 'status-na_cekanju',
+            potvrdjen: 'status-potvrdjen',
+            odbijen: 'status-odbijen'
+        };
+
+        container.innerHTML = filtrirani.map(m => {
+            // Preview
+            let previewHtml = '';
+            if (m.format === 'pdf') {
+                previewHtml = `<embed src="http://localhost:8085/api/v1/files/download/${m.putanjaFajla}" type="application/pdf" width="100%" height="100%" />`;
+            } else if (m.format === 'mp4') {
+                previewHtml = `<video controls style="width:100%; height:100%;"><source src="http://localhost:8085/api/v1/files/download/${m.putanjaFajla}" type="video/mp4">Video nije podržan.</video>`;
+            } else {
+                previewHtml = `<div style="padding: 40px; text-align: center; color: #666;">Pregled nije dostupan.</div>`;
             }
-        })();
-    </script>
-</head>
-<body>
-<div class="header">
-    <h1>Supervizor Panel</h1>
-    <p>Dobrodošli, <span id="ime"></span>!</p>
-</div>
 
-<h2>Funkcije:</h2>
-<ul>
-    <li>Pregled materijala</li>
-    <li>Evaluacija</li>
-    <li>Izveštaji</li>
-</ul>
+            // Full-screen dugme
+            const fullscreenButton = `
+        <div style="text-align: right; margin-top: 10px;">
+            <button class="btn" onclick="openFullscreenPreview('${m.putanjaFajla}', '${m.format}')">🖥️ Celoekranski prikaz</button>
+        </div>
+        `;
 
-<button onclick="logout()">Odjavi se</button>
+            // Audit informacije (uvek prikazane)
+            const evaluatorId = m.poslednjiIzmenioStatus || '–';
+            const napomena = m.napomena || '–';
+            const datumPromene = m.datumPromene
+                ? new Date(m.datumPromene).toLocaleString('sr-RS')
+                : '–';
 
-<script>
+            const auditInfo = `
+        <div class="audit-info">
+            <strong>Informacije o evaluaciji:</strong><br>
+            <strong>Status:</strong> <span class="status-badge ${statusClass[m.status]}">${statusMap[m.status]}</span><br>
+            <strong>Evaluator ID:</strong> ${evaluatorId}<br>
+            <strong>Datum promene:</strong> ${datumPromene}<br>
+            <strong>Napomena:</strong> ${napomena}
+        </div>
+        `;
+
+            // Evaluaciona forma (samo za 'na_cekanju')
+            const evalForm = m.status === 'na_cekanju' ? `
+        <div class="eval-form">
+            <textarea id="napomena-${m.materijalId}" placeholder="Unesite napomenu (obavezno ako odbijate)"></textarea>
+            <div class="eval-buttons">
+                <button class="btn btn-success" onclick="oceniMaterijal(${m.materijalId}, 'potvrdjen')"> Odobri</button>
+                <button class="btn btn-danger" onclick="oceniMaterijal(${m.materijalId}, 'odbijen')"> Odbij</button>
+            </div>
+            <div id="eval-msg-${m.materijalId}" class="message" style="display: none;"></div>
+        </div>
+        ` : '';
+
+            return `
+        <div class="materijal-card">
+            <div class="materijal-header">
+                <div>
+                    <div class="materijal-naslov">${m.naslov}</div>
+                </div>
+            </div>
+            <div class="materijal-meta">
+                <strong>Predmet:</strong> ${m.predmet} |
+                <strong>Razred:</strong> ${m.razred} |
+                <strong>Tip:</strong> ${m.tipMaterijala} |
+                <br><strong>Nastavnik ID:</strong> ${m.nastavnikId} |
+                <strong>Datum uploada:</strong> ${new Date(m.datumUploada).toLocaleDateString('sr-RS')}
+            </div>
+
+            <div class="preview-container">
+                ${previewHtml}
+            </div>
+
+            ${fullscreenButton}
+            ${auditInfo}
+            ${evalForm}
+        </div>
+        `;
+        }).join('');
+    }
+
+    // Evaluacija
+    async function oceniMaterijal(materijalId, status) {
+        const napomenaEl = document.getElementById(`napomena-${materijalId}`);
+        const napomena = napomenaEl ? napomenaEl.value.trim() : '';
+        const msgEl = document.getElementById(`eval-msg-${materijalId}`);
+
+        // Validacija
+        if (status === 'odbijen' && !napomena) {
+            msgEl.textContent = 'Molimo unesite razlog odbijanja.';
+            msgEl.className = 'message message-error';
+            msgEl.style.display = 'block';
+            return;
+        }
+
+        // Debug log
+        console.log('Slanje evaluacije:', {materijalId, status, napomena, evaluatorId: KORISNIK_ID});
+
+        try {
+            const res = await fetch('http://localhost:8087/api/v1/evaluation', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + KORISNIK_TOKEN,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    materijalId: materijalId,
+                    status: status,
+                    napomena: napomena,
+                    evaluatorId: KORISNIK_ID
+                })
+            });
+
+            if (res.ok) {
+                msgEl.textContent = `Materijal je ${status === 'potvrdjen' ? 'odobren' : 'odbijen'}!`;
+                msgEl.className = 'message message-success';
+                msgEl.style.display = 'block';
+
+                // Osveži listu
+                await loadMaterijale();
+                renderMaterijale();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                msgEl.textContent = `Greška: ${err.message || res.status}`;
+                msgEl.className = 'message message-error';
+                msgEl.style.display = 'block';
+                console.error('Greška od servera:', err);
+            }
+        } catch (err) {
+            msgEl.textContent = 'Mrežna greška. Proverite konzolu.';
+            msgEl.className = 'message message-error';
+            msgEl.style.display = 'block';
+            console.error('Fetch greška:', err);
+        }
+    }
+
+    // async function evaluate(materijalId, status) {
+    //     const napomena = document.getElementById(`napomena-${materijalId}`).value;
+    //     const msgEl = document.getElementById(`eval-msg-${materijalId}`);
+    //
+    //     if (status === 'odbijen' && !napomena.trim()) {
+    //         msgEl.textContent = 'Molimo unesite razlog odbijanja.';
+    //         msgEl.className = 'message message-error';
+    //         msgEl.style.display = 'block';
+    //         return;
+    //     }
+    //
+    //     try {
+    //         const res = await fetch('http://localhost:8087/api/v1/evaluation', {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Authorization': 'Bearer ' + KORISNIK_TOKEN,
+    //                 'Content-Type': 'application/json'
+    //             },
+    //             body: JSON.stringify({
+    //                 materijalId,
+    //                 status,
+    //                 napomena: napomena || '',
+    //                 evaluatorId: KORISNIK_ID
+    //             })
+    //         });
+    //
+    //         if (res.ok) {
+    //             msgEl.textContent = `Uspešno ${status === 'potvrdjen' ? 'odobreno' : 'odbijeno'}!`;
+    //             msgEl.className = 'message message-success';
+    //             msgEl.style.display = 'block';
+    //             await loadMaterijale();
+    //             renderMaterijale();
+    //         } else {
+    //             throw new Error('Neuspešna evaluacija');
+    //         }
+    //     } catch (err) {
+    //         msgEl.textContent = 'Greška. Pokušajte ponovo.';
+    //         msgEl.className = 'message message-error';
+    //         msgEl.style.display = 'block';
+    //         console.error(err);
+    //     }
+    // }
+
+    // Filter eventi
+    function initFilterEvents() {
+        const inputs = document.querySelectorAll('#filterPredmet, #filterRazred, #filterNaslov, #filterStatus');
+        inputs.forEach(input => {
+            input.addEventListener('input', renderMaterijale);
+        });
+    }
+
     function logout() {
         localStorage.removeItem('jwtToken');
         window.location.href = '../login.html';
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Supervizor strana učítana');
-    });
+    // GLOBALNA PROMENLJIVA ZA MODAL
+    let fullscreenModal = null;
+
+    // OTVORI FULL SCREEN
+    function openFullscreenPreview(filename, format) {
+        // Ukloni prethodni ako postoji
+        if (fullscreenModal) {
+            document.body.removeChild(fullscreenModal);
+        }
+
+        // Kreiraj modal
+        fullscreenModal = document.createElement('div');
+        fullscreenModal.className = 'fullscreen-modal';
+        fullscreenModal.innerHTML = `
+        <button class="fullscreen-close" onclick="closeFullscreenPreview()">×</button>
+    `;
+
+        // Kreiraj element u zavisnosti od formata
+        let content = '';
+        if (format === 'pdf') {
+            content = `<embed src="http://localhost:8085/api/v1/files/download/${filename}" type="application/pdf" width="100%" height="100%" />`;
+        } else if (format === 'mp4') {
+            content = `<video controls autoplay style="width:100%; height:100%;">
+                    <source src="http://localhost:8085/api/v1/files/download/${filename}" type="video/mp4">
+                    Video nije podržan.
+                  </video>`;
+        } else {
+            content = `<div style="padding: 50px; text-align: center; color: #666;">Pregled nije dostupan.</div>`;
+        }
+
+        fullscreenModal.innerHTML += content;
+        document.body.appendChild(fullscreenModal);
+
+        // ESC za zatvaranje
+        document.addEventListener('keydown', handleEscKey);
+    }
+
+    // ZATVORI FULL SCREEN
+    function closeFullscreenPreview() {
+        if (fullscreenModal) {
+            document.body.removeChild(fullscreenModal);
+            fullscreenModal = null;
+            document.removeEventListener('keydown', handleEscKey);
+        }
+    }
+
+    // RUKOVANJE ESC TASTEROM
+    function handleEscKey(e) {
+        if (e.key === 'Escape') {
+            closeFullscreenPreview();
+        }
+    }
 </script>
 </body>
 </html>

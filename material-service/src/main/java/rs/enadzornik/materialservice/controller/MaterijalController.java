@@ -17,6 +17,7 @@ import rs.enadzornik.materialservice.repository.MaterijalRepozitorijum;
 import rs.enadzornik.materialservice.security.JwtUtil;
 import rs.enadzornik.materialservice.entity.Evaluacija;
 import rs.enadzornik.materialservice.entity.IstorijaPromena;
+import rs.enadzornik.materialservice.dto.KorisnikDto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -92,6 +93,46 @@ public class MaterijalController {
         } else {
             materijali = materijalRepozitorijum.findAll();
         }
+
+        // === POPUNI DODATNE PODATKE IZ ISTORIJE ===
+        // === POPUNI DODATNE PODATKE IZ ISTORIJE ===
+        for (Materijal m : materijali) {
+            IstorijaPromena poslednjaIstorija = istorijaPromenaRepozitorijum
+                    .findFirstByMaterijalIdOrderByVremePromeneDesc(m.getMaterijalId());
+
+            if (poslednjaIstorija != null) {
+                m.setNapomena(poslednjaIstorija.getNapomena());
+                m.setDatumPromene(poslednjaIstorija.getVremePromene());
+
+                // Dobavi ime i prezime evaluatora
+                Integer evaluatorId = poslednjaIstorija.getIzmenioId();
+                if (evaluatorId != null) {
+                    try {
+                        // Poziv ka auth-service-u
+                        KorisnikDto korisnik = authClient.getKorisnikById(evaluatorId);
+                        if (korisnik != null) {
+                            m.setImePrezimeEvaluatora(korisnik.getImeKorisnika() + " " + korisnik.getPrezimeKorisnika());
+                        } else {
+                            m.setImePrezimeEvaluatora("Korisnik #" + evaluatorId);
+                        }
+                    } catch (Exception e) {
+                        m.setImePrezimeEvaluatora("Korisnik #" + evaluatorId);
+                    }
+                }
+            }
+        }
+//        for (Materijal m : materijali) {
+//            // Pronađi poslednju promenu u istoriji za ovaj materijal
+//            IstorijaPromena poslednjaIstorija = istorijaPromenaRepozitorijum
+//                    .findFirstByMaterijalIdOrderByVremePromeneDesc(m.getMaterijalId());
+//
+//            if (poslednjaIstorija != null) {
+//                m.setNapomena(poslednjaIstorija.getNapomena());
+//                m.setPoslednjiIzmenioStatus(poslednjaIstorija.getIzmenioId());
+//                m.setDatumPromene(poslednjaIstorija.getVremePromene());
+//            }
+//            // Ako nema istorije, polja ostaju null → frontend prikazuje "–"
+//        }
 
         return ResponseEntity.ok(materijali);
     }
