@@ -139,7 +139,7 @@ public class MaterijalController {
 
     @PostMapping("/{id}/status")
     public ResponseEntity<Void> updateStatus(
-            @PathVariable("id") Integer id,
+            @PathVariable Integer id,
             @RequestBody StatusUpdateRequest request
     ) {
         System.out.println(">>> Primljen zahtev: id=" + id + ", status=" + request.getStatus() + ", evaluatorId=" + request.getEvaluatorId());

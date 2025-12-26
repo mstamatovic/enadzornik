@@ -476,7 +476,7 @@
             // Full-screen dugme
             const fullscreenButton = `
         <div style="text-align: right; margin-top: 10px;">
-            <button class="btn" onclick="openFullscreenPreview('${m.putanjaFajla}', '${m.format}')">🖥️ Celoekranski prikaz</button>
+            <button class="btn" onclick="openFullscreenPreview('${m.putanjaFajla}', '${m.format}')"> Prikaz u celom ekranu</button>
         </div>
         `;
 
@@ -492,6 +492,7 @@
             <strong>Informacije o evaluaciji:</strong><br>
             <strong>Status:</strong> <span class="status-badge ${statusClass[m.status]}">${statusMap[m.status]}</span><br>
             <strong>Evaluator ID:</strong> ${evaluatorId}<br>
+            <strong>Evaluator:</strong> ${m.imePrezimeEvaluatora || '–'}<br>
             <strong>Datum promene:</strong> ${datumPromene}<br>
             <strong>Napomena:</strong> ${napomena}
         </div>
