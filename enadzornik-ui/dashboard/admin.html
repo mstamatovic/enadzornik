@@ -24,6 +24,22 @@
             padding: 10px 15px;
             cursor: pointer;
         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
     </style>
     <script>
         (function () {
@@ -35,7 +51,7 @@
 
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
-                console.log('Token payload:', payload); // DEBUG
+                console.log('Token payload:', payload);
 
                 if (payload.role !== 'admin') {
                     if (payload.role === 'nastavnik') window.location.href = 'nastavnik.html';
@@ -44,7 +60,6 @@
                     return;
                 }
 
-                // Bezbedniji pristup - koristite email ako ime/prezime ne postoje
                 const displayName = payload.ime && payload.prezime
                     ? payload.ime + ' ' + payload.prezime
                     : payload.email || 'Admin';
@@ -52,6 +67,7 @@
                 document.addEventListener('DOMContentLoaded', function () {
                     document.getElementById('ime').textContent = displayName;
                     document.body.style.display = 'block';
+                    loadGlobalIstoriju();
                 });
 
             } catch (e) {
@@ -75,6 +91,11 @@
     <li>Pregled svih materijala</li>
 </ul>
 
+<h2>📊 Globalna istorija promena</h2>
+<div id="globalnaIstorija">
+    <p>Učitavanje...</p>
+</div>
+
 <button onclick="logout()">Odjavi se</button>
 
 <script>
@@ -83,10 +104,51 @@
         window.location.href = '../login.html';
     }
 
-    // Dodatna provera kada se strana učita
-    document.addEventListener('DOMContentLoaded', function () {
-        console.log('Admin strana učítana');
-    });
+    async function loadGlobalIstoriju() {
+        const token = localStorage.getItem('jwtToken');
+        try {
+            const res = await fetch('http://localhost:8086/api/v1/audit', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const istorija = await res.json();
+
+            const container = document.getElementById('globalnaIstorija');
+            if (istorija.length === 0) {
+                container.innerHTML = '<p>Nema zapisa.</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Materijal ID</th>
+                            <th>Stari status</th>
+                            <th>Novi status</th>
+                            <th>Evaluator ID</th>
+                            <th>Napomena</th>
+                            <th>Datum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${istorija.map(i => `
+                            <tr>
+                                <td>${i.materijalId}</td>
+                                <td>${i.stariStatus}</td>
+                                <td><strong>${i.noviStatus}</strong></td>
+                                <td>${i.izmenioId}</td>
+                                <td>${i.napomena || '–'}</td>
+                                <td>${new Date(i.vremePromene).toLocaleString('sr-RS')}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (err) {
+            console.error('Greška pri učitavanju globalne istorije:', err);
+            document.getElementById('globalnaIstorija').innerHTML = '<p>Greška pri učitavanju istorije.</p>';
+        }
+    }
 </script>
 </body>
 </html>

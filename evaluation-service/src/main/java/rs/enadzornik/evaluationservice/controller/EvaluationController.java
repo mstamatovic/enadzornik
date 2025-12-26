@@ -8,6 +8,7 @@ import rs.enadzornik.evaluationservice.dto.*;
 
 @RestController
 @RequestMapping("/api/v1/evaluation")
+@CrossOrigin(origins = "http://localhost:8000")
 public class EvaluationController {
 
     private final RestTemplate restTemplate;

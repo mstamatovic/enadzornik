@@ -59,4 +59,13 @@ public class Materijal {
 
     @Column(name = "poslednji_izmenio_status")
     private Integer poslednjiIzmenioStatus;
+
+    @Transient // ← Nisu u bazi, samo za JSON
+    private String napomena;
+
+    @Transient
+    private LocalDateTime datumPromene;
+
+    @Transient
+    private String imePrezimeEvaluatora;
 }
