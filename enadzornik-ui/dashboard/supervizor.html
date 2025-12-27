@@ -6,15 +6,18 @@
     <title>Supervizor — eNadzornik</title>
     <style>
         :root {
-            --primary: #c0392b;
-            --primary-light: #e74c3c;
-            --bg: #f8f9fa;
+            /* Supervizor */
+            --primary: #124D4D;
+            --primary-light: #9b59b6;
+            --bg: #f9f9fb;
             --card-bg: #ffffff;
             --text: #2c3e50;
-            --border: #e0e0e0;
+            --border: #eaeaea;
             --success: #27ae60;
             --warning: #f39c12;
             --danger: #e74c3c;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --radius: 12px;
         }
 
         * {
@@ -24,11 +27,36 @@
         }
 
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            padding: 20px;
-            display: none; /* ← PRIKAZUJE SE NAKON INICIJALIZACIJE */
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            padding: 24px;
+        }
+
+        .header {
+            padding: 28px;
+            margin-bottom: 32px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .filters {
+            padding: 28px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 32px;
+        }
+
+        .materijal-card {
+            padding: 28px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 28px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .materijal-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
         }
 
         .header {
@@ -44,7 +72,7 @@
             background: var(--card-bg);
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
             margin-bottom: 25px;
         }
 
@@ -88,7 +116,7 @@
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         .materijal-header {
@@ -169,6 +197,15 @@
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+        }
+
+        .btn {
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .status-badge {
@@ -260,6 +297,18 @@
             cursor: pointer;
             z-index: 10001;
         }
+
+        .tip-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            background: #f1f1f1;
+            color: #555;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
     </style>
 </head>
 <body>
@@ -290,6 +339,18 @@
                 <option value="na_cekanju">Na čekanju</option>
                 <option value="potvrdjen">Odobren</option>
                 <option value="odbijen">Odbijen</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="filterNastavnik">Nastavnik (ime ili prezime)</label>
+            <input type="text" id="filterNastavnik" placeholder="Unesite ime ili prezime...">
+        </div>
+
+        <div class="filter-group">
+            <label for="filterSkola">Škola</label>
+            <select id="filterSkola">
+                <option value="">Sve škole</option>
+                <!-- Opcije će se popuniti dinamički -->
             </select>
         </div>
     </div>
@@ -329,11 +390,16 @@
             document.getElementById('ime').textContent = displayName;
 
             // Učitaj materijale i prikaži stranicu
-            loadMaterijale().then(() => {
+            Promise.all([loadMaterijale(), loadSkole()]).then(() => {
                 renderMaterijale();
                 initFilterEvents();
-                document.body.style.display = 'block'; // ← KLJUČNO: PRIKAZUJE SE OVDE
+                document.body.style.display = 'block';
             });
+            // loadMaterijale().then(() => {
+            //     renderMaterijale();
+            //     initFilterEvents();
+            //     document.body.style.display = 'block'; // ← KLJUČNO: PRIKAZUJE SE OVDE
+            // });
         } catch (e) {
             console.error('Greška pri inicijalizaciji:', e);
             alert('Greška pri učitavanju. Pokušajte ponovo.');
@@ -341,6 +407,29 @@
             window.location.href = '../login.html';
         }
     })();
+
+    // NOVA FUNKCIJA ZA UČITAVANJE ŠKOLA
+    async function loadSkole() {
+        try {
+            const res = await fetch('http://localhost:8083/api/v1/auth/skola');
+            const skole = await res.json();
+            SKOLE_MAP = skole.reduce((map, s) => {
+                map[s.skolaId] = s.skolaNaziv;
+                return map;
+            }, {});
+            // Popuni dropdown
+            const select = document.getElementById('filterSkola');
+            select.innerHTML = '<option value="">Sve škole</option>';
+            skole.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.skolaId;
+                opt.textContent = s.skolaNaziv;
+                select.appendChild(opt);
+            });
+        } catch (err) {
+            console.error('Greška pri učitavanju škola:', err);
+        }
+    }
 
     // Učitaj materijale
     async function loadMaterijale() {
@@ -357,89 +446,39 @@
         }
     }
 
-    // Filtriranje
+    // ZAMENI OBE FUNKCIJE SA OVOM
     function filtrirajMaterijale() {
-        const predmet = document.getElementById('filterPredmet').value.toLowerCase();
-        const razred = document.getElementById('filterRazred').value.toLowerCase();
-        const naslov = document.getElementById('filterNaslov').value.toLowerCase();
-        const status = document.getElementById('filterStatus').value;
+        const filters = {
+            predmet: document.getElementById('filterPredmet').value.toLowerCase(),
+            razred: document.getElementById('filterRazred').value.toLowerCase(),
+            naslov: document.getElementById('filterNaslov').value.toLowerCase(),
+            status: document.getElementById('filterStatus').value,
+            nastavnik: document.getElementById('filterNastavnik').value.toLowerCase(),
+            skolaId: document.getElementById('filterSkola').value || null
+        };
 
         return SVI_MATERIJALI.filter(m => {
-            if (status && m.status !== status) return false;
-            if (predmet && !m.predmet.toLowerCase().includes(predmet)) return false;
-            if (razred && !m.razred.toLowerCase().includes(razred)) return false;
-            if (naslov && !m.naslov.toLowerCase().includes(naslov)) return false;
+            // Filter po predmetu
+            if (filters.predmet && !m.predmet.toLowerCase().includes(filters.predmet)) return false;
+            // Filter po razredu
+            if (filters.razred && !m.razred.toLowerCase().includes(filters.razred)) return false;
+            // Filter po naslovu
+            if (filters.naslov && !m.naslov.toLowerCase().includes(filters.naslov)) return false;
+            // Filter po statusu
+            if (filters.status && m.status !== filters.status) return false;
+            // Filter po nastavniku
+            if (filters.nastavnik) {
+                const ime = (m.imeNastavnika || '').toLowerCase();
+                const prezime = (m.prezimeNastavnika || '').toLowerCase();
+                if (!ime.includes(filters.nastavnik) && !prezime.includes(filters.nastavnik)) return false;
+            }
+            // Filter po školi
+            if (filters.skolaId && m.skolaId != filters.skolaId) return false;
+
             return true;
         });
     }
 
-    // Render
-    //     function renderMaterijale() {
-    //         const filtrirani = filtrirajMaterijale();
-    //         const container = document.getElementById('materijali');
-    //
-    //         if (filtrirani.length === 0) {
-    //             container.innerHTML = '<p style="padding: 20px; text-align: center; color: #666;">Nema materijala koji odgovaraju filterima.</p>';
-    //             return;
-    //         }
-    //
-    //         container.innerHTML = filtrirani.map(m => {
-    //             // Preview
-    //             let previewHtml = '';
-    //             if (m.format === 'pdf') {
-    //                 previewHtml = `<iframe src="http://localhost:8085/api/v1/files/download/${m.putanjaFajla}" title="Pregled PDF-a"></iframe>`;
-    //             } else if (m.format === 'mp4') {
-    //                 previewHtml = `<video controls style="width:100%; height:100%;"><source src="http://localhost:8085/api/v1/files/download/${m.putanjaFajla}" type="video/mp4">Video nije podržan.</video>`;
-    //             } else {
-    //                 previewHtml = `<div style="padding: 40px; text-align: center; color: #666;">Pregled nije dostupan.</div>`;
-    //             }
-    //
-    //             // Status
-    //             const statusMap = {na_cekanju: 'Na čekanju', potvrdjen: 'Odobren', odbijen: 'Odbijen'};
-    //             const statusClass = `status-${m.status}`;
-    //
-    //             return `
-    //                 <div class="materijal-card">
-    //                     <div class="materijal-header">
-    //                         <div>
-    //                             <div class="materijal-naslov">${m.naslov}</div>
-    //                             <span class="status-badge ${statusClass}">${statusMap[m.status]}</span>
-    //                         </div>
-    //                     </div>
-    //                     <div class="materijal-meta">
-    //                         <strong>Predmet:</strong> ${m.predmet} |
-    //                         <strong>Razred:</strong> ${m.razred} |
-    //                         <strong>Tip:</strong> ${m.tipMaterijala} |
-    //                         <br><strong>Nastavnik ID:</strong> ${m.nastavnikId} |
-    //                         <strong>Datum:</strong> ${new Date(m.datumUploada).toLocaleDateString('sr-RS')}
-    //                     </div>
-    //
-    //                     <div class="preview-container">
-    //                         ${previewHtml}
-    //                     </div>
-    //
-    //                     ${m.status === 'na_cekanju' ? `
-    //                     <div class="eval-form">
-    //                         <textarea id="napomena-${m.materijalId}" placeholder="Unesite napomenu (obavezno ako odbijate)"></textarea>
-    //                         <div class="eval-buttons">
-    //                             <button class="btn btn-success" onclick="oceniMaterijal(${m.materijalId}, 'potvrdjen')"> Odobri</button>
-    //                             <button class="btn btn-danger" onclick="oceniMaterijal(${m.materijalId}, 'odbijen')"> Odbij</button>
-    //                         </div>
-    //
-    // <!--                        ${previewHtml}-->
-    //
-    //                         <div style="text-align: right; margin-top: 10px;">
-    //                              <button class="btn" onclick="openFullscreenPreview('${m.putanjaFajla}', '${m.format}')">🖥️ Prikaz u celom ekranu</button>
-    //                         </div>
-    //                         <div id="eval-msg-${m.materijalId}" class="message" style="display: none;"></div>
-    //                     </div>
-    //                     ` : m.napomena ? `<div class="message message-error"><strong>Razlog:</strong> ${m.napomena}</div>` : ''}
-    //                 </div>
-    //
-    //                 `;
-    //         }).join('');
-    //     }
-    // Renderuj materijale
     // Renderuj materijale
     function renderMaterijale() {
         const filtrirani = filtrirajMaterijale();
@@ -518,12 +557,13 @@
                 </div>
             </div>
             <div class="materijal-meta">
-                <strong>Predmet:</strong> ${m.predmet} |
-                <strong>Razred:</strong> ${m.razred} |
-                <strong>Tip:</strong> ${m.tipMaterijala} |
-                <br><strong>Nastavnik ID:</strong> ${m.nastavnikId} |
-                <strong>Datum uploada:</strong> ${new Date(m.datumUploada).toLocaleDateString('sr-RS')}
-            </div>
+    <div><strong>📚 Predmet:</strong> ${m.predmet}</div>
+    <div><strong>🎓 Razred:</strong> ${m.razred}</div>
+    <div><strong>📁 Tip:</strong> ${m.tipMaterijala}</div>
+    <div><strong>🧑‍🏫 Nastavnik:</strong> ${(m.imeNastavnika || '') + ' ' + (m.prezimeNastavnika || '') || 'Nepoznat'}</div>
+    ${m.skolaId ? `<div><strong>🏫 Škola:</strong> ${SKOLE_MAP[m.skolaId] || 'Nepoznata'}</div>` : ''}
+    <div><strong>🕒 Datum uploada:</strong> ${new Date(m.datumUploada).toLocaleDateString('sr-RS')}</div>
+</div>
 
             <div class="preview-container">
                 ${previewHtml}
@@ -592,56 +632,23 @@
         }
     }
 
-    // async function evaluate(materijalId, status) {
-    //     const napomena = document.getElementById(`napomena-${materijalId}`).value;
-    //     const msgEl = document.getElementById(`eval-msg-${materijalId}`);
-    //
-    //     if (status === 'odbijen' && !napomena.trim()) {
-    //         msgEl.textContent = 'Molimo unesite razlog odbijanja.';
-    //         msgEl.className = 'message message-error';
-    //         msgEl.style.display = 'block';
-    //         return;
-    //     }
-    //
-    //     try {
-    //         const res = await fetch('http://localhost:8087/api/v1/evaluation', {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Authorization': 'Bearer ' + KORISNIK_TOKEN,
-    //                 'Content-Type': 'application/json'
-    //             },
-    //             body: JSON.stringify({
-    //                 materijalId,
-    //                 status,
-    //                 napomena: napomena || '',
-    //                 evaluatorId: KORISNIK_ID
-    //             })
-    //         });
-    //
-    //         if (res.ok) {
-    //             msgEl.textContent = `Uspešno ${status === 'potvrdjen' ? 'odobreno' : 'odbijeno'}!`;
-    //             msgEl.className = 'message message-success';
-    //             msgEl.style.display = 'block';
-    //             await loadMaterijale();
-    //             renderMaterijale();
-    //         } else {
-    //             throw new Error('Neuspešna evaluacija');
-    //         }
-    //     } catch (err) {
-    //         msgEl.textContent = 'Greška. Pokušajte ponovo.';
-    //         msgEl.className = 'message message-error';
-    //         msgEl.style.display = 'block';
-    //         console.error(err);
-    //     }
-    // }
-
     // Filter eventi
+    // AŽURIRANA FUNKCIJA
     function initFilterEvents() {
-        const inputs = document.querySelectorAll('#filterPredmet, #filterRazred, #filterNaslov, #filterStatus');
+        const inputs = document.querySelectorAll(
+            '#filterPredmet, #filterRazred, #filterNaslov, #filterStatus, #filterNastavnik, #filterSkola'
+        );
         inputs.forEach(input => {
             input.addEventListener('input', renderMaterijale);
         });
     }
+
+    // function initFilterEvents() {
+    //     const inputs = document.querySelectorAll('#filterPredmet, #filterRazred, #filterNaslov, #filterStatus');
+    //     inputs.forEach(input => {
+    //         input.addEventListener('input', renderMaterijale);
+    //     });
+    // }
 
     function logout() {
         localStorage.removeItem('jwtToken');

@@ -21,8 +21,11 @@ import rs.enadzornik.materialservice.dto.KorisnikDto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/material")
@@ -82,9 +85,107 @@ public class MaterijalController {
         return ResponseEntity.ok(materijalRepozitorijum.save(materijal));
     }
 
+//    @GetMapping
+//    public ResponseEntity<List<Materijal>> getMaterijali(@RequestHeader("Authorization") String authHeader) {
+//
+//        var currentUser = getCurrentUser(authHeader);
+//        List<Materijal> materijali;
+//
+//        if (currentUser.uloga() == UlogaKorisnika.nastavnik) {
+//            materijali = materijalRepozitorijum.findByNastavnikId(currentUser.korisnikId());
+//        } else {
+//            materijali = materijalRepozitorijum.findAll();
+//        }
+//
+//        // === POPUNI DODATNE PODATKE IZ ISTORIJE ===
+//        // === POPUNI DODATNE PODATKE IZ ISTORIJE ===
+//        for (Materijal m : materijali) {
+//            IstorijaPromena poslednjaIstorija = istorijaPromenaRepozitorijum
+//                    .findFirstByMaterijalIdOrderByVremePromeneDesc(m.getMaterijalId());
+//
+//            if (poslednjaIstorija != null) {
+//                m.setNapomena(poslednjaIstorija.getNapomena());
+//                m.setDatumPromene(poslednjaIstorija.getVremePromene());
+//
+//                // Dobavi ime i prezime evaluatora
+//                Integer evaluatorId = poslednjaIstorija.getIzmenioId();
+//                if (evaluatorId != null) {
+//                    try {
+//                        // Poziv ka auth-service-u
+//                        KorisnikDto korisnik = authClient.getKorisnikById(evaluatorId);
+//                        if (korisnik != null) {
+//                            m.setImePrezimeEvaluatora(korisnik.getImeKorisnika() + " " + korisnik.getPrezimeKorisnika());
+//                        } else {
+//                            m.setImePrezimeEvaluatora("Korisnik #" + evaluatorId);
+//                        }
+//                    } catch (Exception e) {
+//                        m.setImePrezimeEvaluatora("Korisnik #" + evaluatorId);
+//                    }
+//                }
+//            }
+//        }
+//
+
+//    @GetMapping
+//    public ResponseEntity<List<Materijal>> getMaterijali(@RequestHeader("Authorization") String authHeader) {
+//
+//        var currentUser = getCurrentUser(authHeader);
+//        List<Materijal> materijali;
+//
+//        if (currentUser.uloga() == UlogaKorisnika.nastavnik) {
+//            materijali = materijalRepozitorijum.findByNastavnikId(currentUser.korisnikId());
+//        } else {
+//            materijali = materijalRepozitorijum.findAll();
+//        }
+//
+//        // === POPUNI DODATNE PODATKE IZ ISTORIJE (evaluator) ===
+//        for (Materijal m : materijali) {
+//            IstorijaPromena poslednjaIstorija = istorijaPromenaRepozitorijum
+//                    .findFirstByMaterijalIdOrderByVremePromeneDesc(m.getMaterijalId());
+//
+//            if (poslednjaIstorija != null) {
+//                m.setNapomena(poslednjaIstorija.getNapomena());
+//                m.setDatumPromene(poslednjaIstorija.getVremePromene());
+//
+//                // Dobavi ime i prezime evaluatora
+//                Integer evaluatorId = poslednjaIstorija.getIzmenioId();
+//                if (evaluatorId != null) {
+//                    try {
+//                        KorisnikDto korisnik = authClient.getKorisnikById(evaluatorId);
+//                        if (korisnik != null) {
+//                            m.setImePrezimeEvaluatora(korisnik.getImeKorisnika() + " " + korisnik.getPrezimeKorisnika());
+//                        } else {
+//                            m.setImePrezimeEvaluatora("Korisnik #" + evaluatorId);
+//                        }
+//                    } catch (Exception e) {
+//                        m.setImePrezimeEvaluatora("Korisnik #" + evaluatorId);
+//                    }
+//                }
+//            }
+//        }
+//
+//        // === NOVO: POPUNI PODATKE O NASTAVNICIMA I ŠKOLAMA ===
+//        // Učitaj sve korisnike jednom
+//        List<KorisnikDto> sviKorisnici = authClient.getSviKorisnici();
+//        Map<Integer, KorisnikDto> korisniciMap = sviKorisnici.stream()
+//                .collect(Collectors.toMap(KorisnikDto::getKorisnikId, k -> k));
+//
+//        // Mapiraj podatke o nastavnicima
+//        for (Materijal m : materijali) {
+//            KorisnikDto nastavnik = korisniciMap.get(m.getNastavnikId());
+//            if (nastavnik != null) {
+//                m.setImeNastavnika(nastavnik.getImeKorisnika());
+//                m.setPrezimeNastavnika(nastavnik.getPrezimeKorisnika());
+//                m.setSkolaId(nastavnik.getSkolaId());
+//            }
+//        }
+//        // === KRAJ NOVOG KODA ===
+//
+//        return ResponseEntity.ok(materijali);
+//    }
+
     @GetMapping
     public ResponseEntity<List<Materijal>> getMaterijali(@RequestHeader("Authorization") String authHeader) {
-
         var currentUser = getCurrentUser(authHeader);
         List<Materijal> materijali;
 
@@ -94,21 +195,29 @@ public class MaterijalController {
             materijali = materijalRepozitorijum.findAll();
         }
 
-        // === POPUNI DODATNE PODATKE IZ ISTORIJE ===
-        // === POPUNI DODATNE PODATKE IZ ISTORIJE ===
+        // === UČITAJ SVE KORISNIKE JEDNOM ===
+        List<KorisnikDto> sviKorisnici;
+        try {
+            sviKorisnici = authClient.getSviKorisnici();
+        } catch (Exception e) {
+            System.err.println(">>> Greška pri učitavanju korisnika: " + e.getMessage());
+            sviKorisnici = new ArrayList<>();
+        }
+
+        Map<Integer, KorisnikDto> korisniciMap = sviKorisnici.stream()
+                .collect(Collectors.toMap(KorisnikDto::getKorisnikId, k -> k, (existing, replacement) -> existing));
+
+        // === POPUNI PODATKE ZA SVAKI MATERIJAL ===
         for (Materijal m : materijali) {
+            // Postojeća logika za evaluatora
             IstorijaPromena poslednjaIstorija = istorijaPromenaRepozitorijum
                     .findFirstByMaterijalIdOrderByVremePromeneDesc(m.getMaterijalId());
-
             if (poslednjaIstorija != null) {
                 m.setNapomena(poslednjaIstorija.getNapomena());
                 m.setDatumPromene(poslednjaIstorija.getVremePromene());
-
-                // Dobavi ime i prezime evaluatora
                 Integer evaluatorId = poslednjaIstorija.getIzmenioId();
                 if (evaluatorId != null) {
                     try {
-                        // Poziv ka auth-service-u
                         KorisnikDto korisnik = authClient.getKorisnikById(evaluatorId);
                         if (korisnik != null) {
                             m.setImePrezimeEvaluatora(korisnik.getImeKorisnika() + " " + korisnik.getPrezimeKorisnika());
@@ -120,19 +229,15 @@ public class MaterijalController {
                     }
                 }
             }
+
+            // === NOVO: POPUNI PODATKE O NASTAVNIKU ===
+            KorisnikDto nastavnik = korisniciMap.get(m.getNastavnikId());
+            if (nastavnik != null) {
+                m.setImeNastavnika(nastavnik.getImeKorisnika());
+                m.setPrezimeNastavnika(nastavnik.getPrezimeKorisnika());
+                m.setSkolaId(nastavnik.getSkolaId());
+            }
         }
-//        for (Materijal m : materijali) {
-//            // Pronađi poslednju promenu u istoriji za ovaj materijal
-//            IstorijaPromena poslednjaIstorija = istorijaPromenaRepozitorijum
-//                    .findFirstByMaterijalIdOrderByVremePromeneDesc(m.getMaterijalId());
-//
-//            if (poslednjaIstorija != null) {
-//                m.setNapomena(poslednjaIstorija.getNapomena());
-//                m.setPoslednjiIzmenioStatus(poslednjaIstorija.getIzmenioId());
-//                m.setDatumPromene(poslednjaIstorija.getVremePromene());
-//            }
-//            // Ako nema istorije, polja ostaju null → frontend prikazuje "–"
-//        }
 
         return ResponseEntity.ok(materijali);
     }

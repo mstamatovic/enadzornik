@@ -18,4 +18,7 @@ public class KorisnikDto {
     private String prezimeKorisnika;
 
     private String email;
+
+    @JsonProperty("skolaId")
+    private Integer skolaId;
 }
