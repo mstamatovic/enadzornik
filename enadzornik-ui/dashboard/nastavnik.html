@@ -34,13 +34,37 @@
             line-height: 1.6;
         }
 
+        /*.header {*/
+        /*    background: var(--primary);*/
+        /*    color: white;*/
+        /*    padding: 28px;*/
+        /*    margin-bottom: 32px;*/
+        /*    border-radius: var(--radius);*/
+        /*    box-shadow: var(--shadow);*/
+        /*}*/
+
         .header {
             background: var(--primary);
             color: white;
-            padding: 28px;
+            padding: 24px;
             margin-bottom: 32px;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .header p {
+            margin: 8px 0 0 0;
+            opacity: 0.9;
         }
 
         .upload-section, .filters {
@@ -101,6 +125,7 @@
             border: 1px solid var(--border);
             border-radius: 8px;
             font-size: 15px;
+            background: whitesmoke;
         }
 
         .materijal-card {
@@ -108,7 +133,8 @@
             border-radius: var(--radius);
             padding: 28px;
             margin-bottom: 28px;
-            box-shadow: var(--shadow);
+            /*box-shadow: var(--shadow);*/
+            box-shadow: 0 0 20px;
             transition: transform 0.2s;
         }
 
@@ -224,6 +250,27 @@
             font-weight: 600;
             cursor: pointer;
             margin-top: 20px;
+            box-shadow: 0 0 4px 4px rgba(0, 0, 0, 0.15);
+        }
+
+
+        /*.logout-btn {*/
+        /*    background: white;*/
+        /*    color: var(--primary);*/
+        /*    border: none;*/
+        /*    padding: 10px 22px;*/
+        /*    border-radius: 30px;*/
+        /*    font-weight: 600;*/
+        /*    cursor: pointer;*/
+        /*    transition: all 0.2s ease;*/
+        /*    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);*/
+        /*    font-size: 0.95rem;*/
+        /*}*/
+
+        .logout-btn:hover {
+            background: #20b2aa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .fullscreen-modal {
@@ -282,8 +329,11 @@
 </head>
 <body>
 <div class="header">
-    <h1>👩‍🏫 Nastavnik Panel</h1>
-    <p>Dobrodošli, <span id="ime"></span>!</p>
+    <div>
+        <h1>👩‍🏫 Nastavnik Panel</h1>
+        <p>Dobrodošli, <span id="ime"></span>!</p>
+    </div>
+    <button class="logout-btn" onclick="logout()">Odjavi se</button>
 </div>
 
 <!-- Upload forma -->
@@ -294,13 +344,33 @@
             <label>Naslov</label>
             <input type="text" id="naslov" required>
         </div>
+        <!--        <div class="form-group">-->
+        <!--            <label>Predmet</label>-->
+        <!--            <input type="text" id="predmet" required>-->
+        <!--        </div>-->
         <div class="form-group">
             <label>Predmet</label>
-            <input type="text" id="predmet" required>
+            <select id="predmet" required>
+                <option value="">Učitavanje predmeta...</option>
+            </select>
         </div>
+        <!--        <div class="form-group">-->
+        <!--            <label>Razred</label>-->
+        <!--            <input type="text" id="razred" required>-->
+        <!--        </div>-->
         <div class="form-group">
             <label>Razred</label>
-            <input type="text" id="razred" required>
+            <select id="razred" required>
+                <option value="">Izaberite razred</option>
+                <option value="Prvi">Prvi</option>
+                <option value="Drugi">Drugi</option>
+                <option value="Treci">Treci</option>
+                <option value="Cetvrti">Cetvrti</option>
+                <option value="Peti">Peti</option>
+                <option value="Sesti">Sesti</option>
+                <option value="Sedmi">Sedmi</option>
+                <option value="Osmi">Osmi</option>
+            </select>
         </div>
         <div class="form-group">
             <label>Datum časa</label>
@@ -323,7 +393,8 @@
             <label>Fajl</label>
             <input type="file" id="file" accept=".pdf,.mp4" required>
         </div>
-        <button type="submit" class="btn btn-success">Uploaduj materijal</button>
+        <button type="submit" class="logout-btn">Otpremi materijal</button>
+        <!--        <button type="submit" class="btn btn-success">Upload materijala</button>-->
     </form>
     <div id="uploadMsg" class="message" style="display:none; margin-top:15px;"></div>
 </div>
@@ -390,7 +461,12 @@
                 : payload.email || 'Nastavnik';
             document.getElementById('ime').textContent = displayName;
 
-            Promise.all([loadMaterijale(), loadSkole()]).then(() => {
+            // Promise.all([loadMaterijale(), loadSkole()]).then(() => {
+            //     renderMaterijale();
+            //     initFilterEvents();
+            //     document.body.style.display = 'block';
+            // });
+            Promise.all([loadMaterijale(), loadSkole(), loadPredmeti()]).then(() => {
                 renderMaterijale();
                 initFilterEvents();
                 document.body.style.display = 'block';
@@ -453,7 +529,7 @@
 
             if (matRes.ok) {
                 msgEl.className = 'message-success';
-                msgEl.textContent = 'Materijal uspešno uploadovan!';
+                msgEl.textContent = 'Materijal uspešno otpremljen!';
                 document.getElementById('uploadForm').reset();
                 await loadMaterijale();
                 renderMaterijale();
@@ -563,7 +639,7 @@
                             <div class="materijal-naslov">${ikonica} ${m.naslov}</div>
                             <span class="tip-badge">${tipPrikaz}</span>
                         </div>
-                        <span class="status-badge ${statusClass[m.status]}">${statusMap[m.status]}</span>
+<!--                        <span class="status-badge ${statusClass[m.status]}">${statusMap[m.status]}</span>-->
                     </div>
                     <div class="materijal-meta">
                         <div><strong>📚 Predmet:</strong> ${m.predmet}</div>
@@ -623,6 +699,35 @@
         localStorage.removeItem('jwtToken');
         window.location.href = '../login.html';
     }
+
+    // Učitaj sve dostupne predmete (jedinstvene vrednosti iz materijala)
+    async function loadPredmeti() {
+        try {
+            // Možeš koristiti /api/v1/material jer vraća sve materijale
+            const res = await fetch('http://localhost:8084/api/v1/material', {
+                headers: {'Authorization': 'Bearer ' + KORISNIK_TOKEN}
+            });
+            const materijali = await res.json();
+
+            // Ekstrahuј jedinstvene predmete
+            const predmeti = [...new Set(materijali.map(m => m.predmet))].sort();
+
+            const select = document.getElementById('predmet');
+            select.innerHTML = '<option value="">Izaberite predmet</option>';
+            predmeti.forEach(predmet => {
+                if (predmet) {
+                    const opt = document.createElement('option');
+                    opt.value = predmet;
+                    opt.textContent = predmet;
+                    select.appendChild(opt);
+                }
+            });
+        } catch (err) {
+            console.error('Greška pri učitavanju predmeta:', err);
+            document.getElementById('predmet').innerHTML = '<option value="">Greška pri učitavanju</option>';
+        }
+    }
+
 </script>
 </body>
 </html>
