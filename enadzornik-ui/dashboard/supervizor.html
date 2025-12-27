@@ -32,11 +32,35 @@
             padding: 24px;
         }
 
+        /*.header {*/
+        /*    padding: 28px;*/
+        /*    margin-bottom: 32px;*/
+        /*    border-radius: var(--radius);*/
+        /*    box-shadow: var(--shadow);*/
+        /*}*/
+
         .header {
-            padding: 28px;
+            background: var(--primary);
+            color: white;
+            padding: 24px;
             margin-bottom: 32px;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .header p {
+            margin: 8px 0 0 0;
+            opacity: 0.9;
         }
 
         .filters {
@@ -49,7 +73,8 @@
         .materijal-card {
             padding: 28px;
             border-radius: var(--radius);
-            box-shadow: var(--shadow);
+            /*box-shadow: var(--shadow);*/
+            box-shadow: 0 0 0 0;
             margin-bottom: 28px;
             transition: transform 0.2s, box-shadow 0.2s;
         }
@@ -59,14 +84,14 @@
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
         }
 
-        .header {
-            background: var(--primary);
-            color: white;
-            padding: 20px;
-            margin-bottom: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
+        /*.header {*/
+        /*    background: var(--primary);*/
+        /*    color: white;*/
+        /*    padding: 20px;*/
+        /*    margin-bottom: 25px;*/
+        /*    border-radius: 8px;*/
+        /*    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
+        /*}*/
 
         .filters {
             background: var(--card-bg);
@@ -252,11 +277,70 @@
             background: var(--primary);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+            padding: 12px 24px;
+            border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             margin-top: 20px;
+            box-shadow: 0 0 4px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .logout-btn:hover {
+            background: #20b2aa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-approve {
+            /*background: white;*/
+            /*color: var(--success); !* #27ae60 *!*/
+            /*border: none;*/
+            /*padding: 10px 22px;*/
+            /*border-radius: 30px;*/
+            /*font-weight: 600;*/
+            /*cursor: pointer;*/
+            /*box-shadow: 0 2px 8px rgba(0,0,0,0.15);*/
+            /*transition: all 0.2s ease;*/
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .btn-approve:hover {
+            background: #20b2aa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-reject {
+            /*background: white;*/
+            /*color: var(--danger); !* #e74c3c *!*/
+            /*border: none;*/
+            /*padding: 10px 22px;*/
+            /*border-radius: 30px;*/
+            /*font-weight: 600;*/
+            /*cursor: pointer;*/
+            /*box-shadow: 0 2px 8px rgba(0,0,0,0.15);*/
+            /*transition: all 0.2s ease;*/
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .btn-reject:hover {
+            background: #20b2aa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .fullscreen-modal {
@@ -313,20 +397,46 @@
 </head>
 <body>
 <div class="header">
-    <h1>📘 Supervizor Panel</h1>
-    <p>Dobrodošli, <span id="ime"></span>!</p>
+    <div>
+        <h1>📘 Supervizor Panel</h1>
+        <p>Dobrodošli, <span id="ime"></span>!</p>
+    </div>
+    <button class="logout-btn" onclick="logout()">Odjavi se</button>
 </div>
 
 <div class="filters">
     <h3>🔍 Filteri</h3>
     <div class="filter-row">
-        <div class="filter-group">
-            <label for="filterPredmet">Predmet</label>
-            <input type="text" id="filterPredmet" placeholder="Npr. Matematika...">
-        </div>
+        <!--        <div class="filter-group">-->
+        <!--            <label for="filterPredmet">Predmet</label>-->
+        <!--            <input type="text" id="filterPredmet" placeholder="Npr. Matematika...">-->
+        <!--        </div>-->
+        <!--        <div class="filter-group">-->
+        <!--            <label for="filterRazred">Razred</label>-->
+        <!--            <input type="text" id="filterRazred" placeholder="Npr. 5, V, ...">-->
+        <!--        </div>-->
+        <!-- Filter: Razred (dropdown 1-8) -->
         <div class="filter-group">
             <label for="filterRazred">Razred</label>
-            <input type="text" id="filterRazred" placeholder="Npr. 5, V, ...">
+            <select id="filterRazred">
+                <option value="">Svi razredi</option>
+                <option value="Prvi">Prvi</option>
+                <option value="Drugi">Drugi</option>
+                <option value="Treci">Treci</option>
+                <option value="Cetvrti">Cetvrti</option>
+                <option value="Peti">Peti</option>
+                <option value="Sesti">Sesti</option>
+                <option value="Sedmi">Sedmi</option>
+                <option value="Osmi">Osmi</option>
+            </select>
+        </div>
+
+        <!-- Filter: Predmet (dinamički dropdown) -->
+        <div class="filter-group">
+            <label for="filterPredmet">Predmet</label>
+            <select id="filterPredmet">
+                <option value="">Učitavanje predmeta...</option>
+            </select>
         </div>
         <div class="filter-group">
             <label for="filterNaslov">Naslov</label>
@@ -390,7 +500,7 @@
             document.getElementById('ime').textContent = displayName;
 
             // Učitaj materijale i prikaži stranicu
-            Promise.all([loadMaterijale(), loadSkole()]).then(() => {
+            Promise.all([loadMaterijale(), loadSkole(), loadPredmetiZaFilter()]).then(() => {
                 renderMaterijale();
                 initFilterEvents();
                 document.body.style.display = 'block';
@@ -541,10 +651,10 @@
             const evalForm = m.status === 'na_cekanju' ? `
         <div class="eval-form">
             <textarea id="napomena-${m.materijalId}" placeholder="Unesite napomenu (obavezno ako odbijate)"></textarea>
-            <div class="eval-buttons">
-                <button class="btn btn-success" onclick="oceniMaterijal(${m.materijalId}, 'potvrdjen')"> Odobri</button>
-                <button class="btn btn-danger" onclick="oceniMaterijal(${m.materijalId}, 'odbijen')"> Odbij</button>
-            </div>
+                <div class="eval-buttons" style="display: flex; gap: 12px; margin-top: 12px;">
+                     <button class="btn-approve" onclick="oceniMaterijal(${m.materijalId}, 'potvrdjen')">Odobri</button>
+                     <button class="btn-reject" onclick="oceniMaterijal(${m.materijalId}, 'odbijen')">Odbij</button>
+                </div>
             <div id="eval-msg-${m.materijalId}" class="message" style="display: none;"></div>
         </div>
         ` : '';
@@ -705,6 +815,31 @@
     function handleEscKey(e) {
         if (e.key === 'Escape') {
             closeFullscreenPreview();
+        }
+    }
+
+    // Učitaj sve jedinstvene predmete iz materijala
+    async function loadPredmetiZaFilter() {
+        try {
+            const res = await fetch('http://localhost:8084/api/v1/material', {
+                headers: {'Authorization': 'Bearer ' + KORISNIK_TOKEN}
+            });
+            const materijali = await res.json();
+            const predmeti = [...new Set(materijali.map(m => m.predmet))].sort();
+
+            const select = document.getElementById('filterPredmet');
+            select.innerHTML = '<option value="">Svi predmeti</option>';
+            predmeti.forEach(predmet => {
+                if (predmet) {
+                    const opt = document.createElement('option');
+                    opt.value = predmet;
+                    opt.textContent = predmet;
+                    select.appendChild(opt);
+                }
+            });
+        } catch (err) {
+            console.error('Greška pri učitavanju predmeta za filter:', err);
+            document.getElementById('filterPredmet').innerHTML = '<option value="">Greška</option>';
         }
     }
 </script>
