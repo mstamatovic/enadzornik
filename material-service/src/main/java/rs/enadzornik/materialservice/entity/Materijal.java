@@ -68,4 +68,14 @@ public class Materijal {
 
     @Transient
     private String imePrezimeEvaluatora;
+
+    // Na kraju klase, pre zatvarajuće vitičaste zagrade
+    @Transient
+    private String imeNastavnika;
+
+    @Transient
+    private String prezimeNastavnika;
+
+    @Transient
+    private Integer skolaId;
 }

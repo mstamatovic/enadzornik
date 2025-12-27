@@ -160,4 +160,24 @@ public class AuthController {
 
         return dto;
     }
+
+    @GetMapping("/korisnici")
+    public List<KorisnikDto> getSviKorisnici() {
+        return korisnikRepozitorijum.findAll().stream()
+                .map(k -> {
+                    KorisnikDto dto = new KorisnikDto();
+                    dto.setKorisnikId(k.getKorisnikId());
+                    dto.setImeKorisnika(k.getImeKorisnika());
+                    dto.setPrezimeKorisnika(k.getPrezimeKorisnika());
+                    dto.setUloga(k.getUlogaKorisnika());
+
+                    // Ekstrakcija skolaId iz Skola objekta
+                    if (k.getSkola() != null) {
+                        dto.setSkolaId(k.getSkola().getSkolaId());
+                    }
+
+                    return dto;
+                })
+                .toList();
+    }
 }

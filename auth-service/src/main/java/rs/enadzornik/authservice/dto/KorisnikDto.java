@@ -11,4 +11,6 @@ public class KorisnikDto {
     private String imeKorisnika;
     private String prezimeKorisnika;
     private String email; // opcionalno
+    private String skola;
+    private Integer skolaId;
 }
