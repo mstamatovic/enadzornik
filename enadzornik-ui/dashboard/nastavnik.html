@@ -2,137 +2,421 @@
 <html lang="sr">
 <head>
     <meta charset="UTF-8">
-    <title>Nastavnik</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nastavnik — eNadzornik</title>
     <style>
+        :root {
+            --primary: #124D4D; /* Zelena za nastavnika */
+            --primary-light: #2ecc71;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --border: #e0e0e0;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 24px;
+            display: none;
+            line-height: 1.6;
         }
 
         .header {
-            background: #27ae60;
+            background: var(--primary);
             color: white;
-            padding: 15px;
+            padding: 28px;
+            margin-bottom: 32px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .upload-section, .filters {
+            background: var(--card-bg);
+            padding: 28px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 32px;
+        }
+
+        .upload-section h3, .filters h3 {
+            margin-bottom: 24px;
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        .form-group {
             margin-bottom: 20px;
         }
 
-        form {
-            margin-bottom: 30px;
-        }
-
-        label {
+        .form-group label {
             display: block;
-            margin: 8px 0 4px;
+            margin-bottom: 8px;
+            font-weight: 600;
         }
 
-        input, select, button {
+        .form-group input,
+        .form-group select {
             width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-            margin-bottom: 10px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
         }
 
-        button {
-            background: #27ae60;
-            color: white;
+        .materijal-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 28px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s;
+        }
+
+        .materijal-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .materijal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+
+        .materijal-naslov {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .tip-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            background: #f1f1f1;
+            color: #555;
+        }
+
+        .materijal-meta {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .preview-container {
+            margin: 20px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f8f9fa;
+            height: 300px;
+        }
+
+        .preview-container embed,
+        .preview-container video {
+            width: 100%;
+            height: 100%;
             border: none;
-            cursor: pointer;
         }
 
-        button:hover {
-            background: #219653;
+        .audit-info {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px dashed var(--border);
+            font-size: 0.95rem;
+            color: #555;
         }
 
-        #uploadMessage {
-            color: green;
-            margin-top: 10px;
-        }
-
-        #uploadMessage.error {
-            color: red;
-        }
-
-        .materijal {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
         }
 
         .status-na_cekanju {
-            border-left: 5px solid orange;
+            background: #fff3cd;
+            color: #856404;
         }
+
         .status-potvrdjen {
-            border-left: 5px solid green;
+            background: #d4edda;
+            color: #155724;
         }
+
         .status-odbijen {
-            border-left: 5px solid red;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .logout-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .fullscreen-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: white;
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .fullscreen-modal embed,
+        .fullscreen-modal video {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #f0f0f0;
+        }
+
+        .fullscreen-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 10001;
+        }
+
+        @media (max-width: 768px) {
+            .filter-row {
+                flex-direction: column;
+            }
+
+            .materijal-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .preview-container {
+                height: 250px;
+            }
         }
     </style>
 </head>
 <body>
 <div class="header">
-    <h1>📘 Prostor za nastavnike</h1>
-    <p>Dobrodošli, <span id="imePrezime"></span>!</p>
+    <h1>👩‍🏫 Nastavnik Panel</h1>
+    <p>Dobrodošli, <span id="ime"></span>!</p>
 </div>
 
 <!-- Upload forma -->
-<h2>Upload materijala</h2>
-<form id="uploadForm">
-    <label>Naslov: <input type="text" id="naslov" required></label>
-    <label>Tip materijala:
-        <select id="tipMaterijala" required>
-            <option value="priprema">Priprema za čas</option>
-            <option value="mesecni_plan">Mesečni plan</option>
-            <option value="video_snimak">Video snimak</option>
-        </select>
-    </label>
-    <label>Fajl: <input type="file" id="fajl" accept=".pdf,.mp4" required></label>
-    <label>Predmet: <input type="text" id="predmet" required></label>
-    <label>Razred: <input type="text" id="razred" required></label>
-    <label>Datum časa (za pripreme/video): <input type="date" id="datumCasa"></label>
-    <label>Mesec planiranja (za mesečne planove): <input type="month" id="mesecPlaniranja"></label>
-    <button type="submit">Upload</button>
-</form>
-<p id="uploadMessage"></p>
+<div class="upload-section">
+    <h3>📤 Upload novog materijala</h3>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <div class="form-group">
+            <label>Naslov</label>
+            <input type="text" id="naslov" required>
+        </div>
+        <div class="form-group">
+            <label>Predmet</label>
+            <input type="text" id="predmet" required>
+        </div>
+        <div class="form-group">
+            <label>Razred</label>
+            <input type="text" id="razred" required>
+        </div>
+        <div class="form-group">
+            <label>Datum časa</label>
+            <input type="date" id="datumCasa">
+        </div>
+        <div class="form-group">
+            <label>Mesec planiranja</label>
+            <input type="month" id="mesecPlaniranja">
+            <small style="color:#666; font-size:0.85rem;">Obavezno za mesečne planove</small>
+        </div>
+        <div class="form-group">
+            <label>Tip materijala</label>
+            <select id="tipMaterijala" required>
+                <option value="priprema">Priprema za čas</option>
+                <option value="mesecni_plan">Mesečni plan</option>
+                <option value="video_snimak">Video snimak</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Fajl</label>
+            <input type="file" id="file" accept=".pdf,.mp4" required>
+        </div>
+        <button type="submit" class="btn btn-success">Uploaduj materijal</button>
+    </form>
+    <div id="uploadMsg" class="message" style="display:none; margin-top:15px;"></div>
+</div>
 
-<!-- Lista materijala -->
-<h2>Moji materijali</h2>
+<!-- Filteri -->
+<div class="filters">
+    <h3>🔍 Moji materijali</h3>
+    <div class="filter-row">
+        <div class="filter-group">
+            <label for="filterPredmet">Predmet</label>
+            <input type="text" id="filterPredmet" placeholder="Npr. Matematika...">
+        </div>
+        <div class="filter-group">
+            <label for="filterRazred">Razred</label>
+            <input type="text" id="filterRazred" placeholder="Npr. 5, V, ...">
+        </div>
+        <div class="filter-group">
+            <label for="filterNaslov">Naslov</label>
+            <input type="text" id="filterNaslov" placeholder="Deo naslova...">
+        </div>
+        <div class="filter-group">
+            <label for="filterStatus">Status</label>
+            <select id="filterStatus">
+                <option value="">Svi statusi</option>
+                <option value="na_cekanju">Na čekanju</option>
+                <option value="potvrdjen">Odobren</option>
+                <option value="odbijen">Odbijen</option>
+            </select>
+        </div>
+    </div>
+</div>
+
 <div id="materijali">
     <p>Učitavanje...</p>
 </div>
 
-<!-- Logout dugme -->
-<button onclick="logout()">Odjavi se</button>
+<button class="logout-btn" onclick="logout()">Odjavi se</button>
 
 <script>
-    // Prikaži ime korisnika
-    document.getElementById('imePrezime').textContent =
-        localStorage.getItem('korisnikImePrezime') || 'Nastavnik';
+    let KORISNIK_TOKEN = localStorage.getItem('jwtToken');
+    let KORISNIK_ID = null;
+    let SVI_MATERIJALI = [];
+    let SKOLE_MAP = {};
 
-    const KORISNIK_TOKEN = localStorage.getItem('jwtToken');
-
-    // Upload fajla + metapodaci
-    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const msg = document.getElementById('uploadMessage');
+    // Inicijalizacija
+    (function () {
         if (!KORISNIK_TOKEN) {
-            msg.textContent = 'Nisi ulogovan!';
-            msg.className = 'error';
-            return;
-        }
-
-        const fajl = document.getElementById('fajl').files[0];
-        if (!fajl) {
-            msg.textContent = 'Izaberi fajl!';
-            msg.className = 'error';
+            window.location.href = '../login.html';
             return;
         }
 
         try {
-            // 1. Upload fajla → file-service
+            const payload = JSON.parse(atob(KORISNIK_TOKEN.split('.')[1]));
+            const userRole = (payload.role || '').toUpperCase();
+
+            if (userRole !== 'NASTAVNIK') {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            KORISNIK_ID = payload.korisnikId;
+            const displayName = payload.ime && payload.prezime
+                ? payload.ime + ' ' + payload.prezime
+                : payload.email || 'Nastavnik';
+            document.getElementById('ime').textContent = displayName;
+
+            Promise.all([loadMaterijale(), loadSkole()]).then(() => {
+                renderMaterijale();
+                initFilterEvents();
+                document.body.style.display = 'block';
+            });
+        } catch (e) {
+            console.error('Greška pri inicijalizaciji:', e);
+            localStorage.removeItem('jwtToken');
+            window.location.href = '../login.html';
+        }
+    })();
+
+    // Upload materijala
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msgEl = document.getElementById('uploadMsg');
+        msgEl.style.display = 'block';
+
+        try {
+            const fileInput = document.getElementById('file');
+            if (!fileInput.files.length) throw new Error('Izaberite fajl');
+
+            const file = fileInput.files[0];
             const formData = new FormData();
-            formData.append('file', fajl);
+            formData.append('file', file);
+
+            // Upload fajla
             const fileRes = await fetch('http://localhost:8085/api/v1/files/upload', {
                 method: 'POST',
                 headers: {'Authorization': 'Bearer ' + KORISNIK_TOKEN},
@@ -141,23 +425,24 @@
             const fileData = await fileRes.json();
             if (!fileRes.ok) throw new Error('Greška pri uploadu fajla');
 
-            // 2. Pošalji metapodatke → material-service
+            // Priprema metapodataka
             const metapodaci = {
                 naslov: document.getElementById('naslov').value,
                 tipMaterijala: document.getElementById('tipMaterijala').value,
-                format: fajl.name.split('.').pop().toLowerCase(),
+                format: file.name.split('.').pop().toLowerCase(),
                 putanjaFajla: fileData.filePath,
-                velicinaMb: (fajl.size / (1024 * 1024)).toFixed(2),
+                velicinaMb: (file.size / (1024 * 1024)).toFixed(2),
                 predmet: document.getElementById('predmet').value,
                 razred: document.getElementById('razred').value,
                 datumCasa: document.getElementById('datumCasa').value || null,
                 mesecPlaniranja: (() => {
                     const val = document.getElementById('mesecPlaniranja').value;
-                    return val ? val + "-01" : null;
+                    return val ? val + '-01' : null;
                 })()
             };
 
-            const metaRes = await fetch('http://localhost:8084/api/v1/material', {
+            // Sačuvaj materijal
+            const matRes = await fetch('http://localhost:8084/api/v1/material', {
                 method: 'POST',
                 headers: {
                     'Authorization': 'Bearer ' + KORISNIK_TOKEN,
@@ -166,114 +451,178 @@
                 body: JSON.stringify(metapodaci)
             });
 
-            if (metaRes.ok) {
-                msg.textContent = 'Uspešno uploadovano!';
-                msg.className = '';
+            if (matRes.ok) {
+                msgEl.className = 'message-success';
+                msgEl.textContent = 'Materijal uspešno uploadovan!';
                 document.getElementById('uploadForm').reset();
-                loadMaterijali(); // Osvježi listu
+                await loadMaterijale();
+                renderMaterijale();
             } else {
-                const err = await metaRes.json();
-                throw new Error(err.message || 'Greška pri čuvanju metapodataka');
+                throw new Error('Greška pri čuvanju metapodataka');
             }
         } catch (err) {
-            msg.textContent = 'Greška: ' + err.message;
-            msg.className = 'error';
-            console.error(err);
+            msgEl.className = 'message-error';
+            msgEl.textContent = 'Greška: ' + err.message;
         }
     });
 
-    // Učitaj materijale
-    async function loadMaterijali() {
-        if (!KORISNIK_TOKEN) {
-            document.getElementById('materijali').innerHTML = '<p>Morate biti ulogovani.</p>';
-            return;
+    // Učitaj škole
+    async function loadSkole() {
+        try {
+            const res = await fetch('http://localhost:8081/api/v1/auth/skola');
+            const skole = await res.json();
+            SKOLE_MAP = skole.reduce((map, s) => {
+                map[s.skolaId] = s.skolaNaziv;
+                return map;
+            }, {});
+        } catch (err) {
+            console.error('Greška pri učitavanju škola:', err);
         }
+    }
 
+    // Učitaj materijale
+    async function loadMaterijale() {
         try {
             const res = await fetch('http://localhost:8084/api/v1/material', {
                 headers: {'Authorization': 'Bearer ' + KORISNIK_TOKEN}
             });
-            const materijali = await res.json();
+            if (!res.ok) throw new Error('Neuspešno učitavanje');
+            SVI_MATERIJALI = await res.json();
+        } catch (err) {
+            console.error('Greška:', err);
+            document.getElementById('materijali').innerHTML = '<p style="color:red;">Greška pri učitavanju.</p>';
+            throw err;
+        }
+    }
 
-            const statusStyles = {
-                'na_cekanju': 'color: orange;',
-                'potvrdjen': 'color: green;',
-                'odbijen': 'color: red;'
-            };
-            const statusText = {
-                'na_cekanju': 'Na čekanju',
-                'potvrdjen': 'Odobren',
-                'odbijen': 'Odbijen'
-            };
+    // Filtriranje
+    function filtrirajMaterijale() {
+        const filters = {
+            predmet: document.getElementById('filterPredmet').value.toLowerCase(),
+            razred: document.getElementById('filterRazred').value.toLowerCase(),
+            naslov: document.getElementById('filterNaslov').value.toLowerCase(),
+            status: document.getElementById('filterStatus').value
+        };
 
-            const container = document.getElementById('materijali');
-            if (materijali.length === 0) {
-                container.innerHTML = '<p>Nemate uploadovanih materijala.</p>';
-                return;
+        return SVI_MATERIJALI.filter(m => {
+            if (filters.status && m.status !== filters.status) return false;
+            if (filters.predmet && !m.predmet.toLowerCase().includes(filters.predmet)) return false;
+            if (filters.razred && !m.razred.toLowerCase().includes(filters.razred)) return false;
+            if (filters.naslov && !m.naslov.toLowerCase().includes(filters.naslov)) return false;
+            return true;
+        });
+    }
+
+    // Renderuj materijale
+    function renderMaterijale() {
+        const filtrirani = filtrirajMaterijale();
+        const container = document.getElementById('materijali');
+
+        if (filtrirani.length === 0) {
+            container.innerHTML = '<p style="padding:20px; text-align:center; color:#666;">Nema materijala.</p>';
+            return;
+        }
+
+        const statusMap = {na_cekanju: 'Na čekanju', potvrdjen: 'Odobren', odbijen: 'Odbijen'};
+        const statusClass = {na_cekanju: 'status-na_cekanju', potvrdjen: 'status-potvrdjen', odbijen: 'status-odbijen'};
+        const tipIkonice = {'priprema': '📝', 'mesecni_plan': '📅', 'video_snimak': '🎥'};
+
+        container.innerHTML = filtrirani.map(m => {
+            let previewHtml = '';
+            if (m.format === 'pdf') {
+                previewHtml = `<embed src="http://localhost:8085/api/v1/files/download/${m.putanjaFajla}" type="application/pdf" width="100%" height="100%" />`;
+            } else if (m.format === 'mp4') {
+                previewHtml = `<video controls style="width:100%; height:100%;"><source src="http://localhost:8085/api/v1/files/download/${m.putanjaFajla}" type="video/mp4">Video nije podržan.</video>`;
+            } else {
+                previewHtml = `<div style="padding:40px; text-align:center; color:#666;">Pregled nije dostupan.</div>`;
             }
 
-            container.innerHTML = materijali.map(m => {
-                return `
-                <div class="materijal status-${m.status}">
-                    <h3>${m.naslov}</h3>
-                    <p><strong>Tip:</strong> ${m.tipMaterijala}</p>
-                    <p><strong>Status:</strong> <span style="${statusStyles[m.status]}">${statusText[m.status]}</span></p>
-                    ${m.status === 'odbijen' ? `<p><strong>Razlog odbijanja:</strong> ${m.napomena || '–'}</p>` : ''}
-                    <p><strong>Fajl:</strong> ${m.putanjaFajla}</p>
-                    <p><strong>Predmet:</strong> ${m.predmet} | <strong>Razred:</strong> ${m.razred}</p>
-                    <button onclick="downloadFile('${m.putanjaFajla}')">Preuzmi</button>
+            const fullscreenButton = `
+                <div style="text-align:right; margin-top:10px;">
+                    <button class="btn" onclick="openFullscreenPreview('${m.putanjaFajla}', '${m.format}')">Prikaz u celom ekranu</button>
                 </div>
             `;
-            }).join('');
-        } catch (err) {
-            console.error('Greška pri učitavanju materijala:', err);
-            document.getElementById('materijali').innerHTML = '<p>Greška pri učitavanju.</p>';
+
+            const auditInfo = `
+                <div class="audit-info">
+                    <strong>ℹ️ Informacije o evaluaciji:</strong><br>
+                    <strong>Status:</strong> <span class="status-badge ${statusClass[m.status]}">${statusMap[m.status]}</span><br>
+                    <strong>Evaluator:</strong> ${m.imePrezimeEvaluatora || '–'}<br>
+                    <strong>Datum promene:</strong> ${m.datumPromene ? new Date(m.datumPromene).toLocaleString('sr-RS') : '–'}<br>
+                    <strong>Napomena:</strong> ${m.napomena || '–'}
+                </div>
+            `;
+
+            const ikonica = tipIkonice[m.tipMaterijala] || '📄';
+            const tipPrikaz = m.tipMaterijala.replace('_', ' ');
+
+            return `
+                <div class="materijal-card">
+                    <div class="materijal-header">
+                        <div>
+                            <div class="materijal-naslov">${ikonica} ${m.naslov}</div>
+                            <span class="tip-badge">${tipPrikaz}</span>
+                        </div>
+                        <span class="status-badge ${statusClass[m.status]}">${statusMap[m.status]}</span>
+                    </div>
+                    <div class="materijal-meta">
+                        <div><strong>📚 Predmet:</strong> ${m.predmet}</div>
+                        <div><strong>🎓 Razred:</strong> ${m.razred}</div>
+                        <div><strong>🧑‍🏫 Nastavnik:</strong> ${(m.imeNastavnika || '') + ' ' + (m.prezimeNastavnika || '') || 'Nepoznat'}</div>
+                        <div><strong>🕒 Datum uploada:</strong> ${m.datumUploada ? new Date(m.datumUploada).toLocaleDateString('sr-RS') : '–'}</div>
+                    </div>
+                    <div class="preview-container">${previewHtml}</div>
+                    ${fullscreenButton}
+                    ${auditInfo}
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Fullscreen funkcije
+    let fullscreenModal = null;
+
+    function openFullscreenPreview(filename, format) {
+        if (fullscreenModal) document.body.removeChild(fullscreenModal);
+        fullscreenModal = document.createElement('div');
+        fullscreenModal.className = 'fullscreen-modal';
+        fullscreenModal.innerHTML = `<button class="fullscreen-close" onclick="closeFullscreenPreview()">×</button>`;
+        let content = '';
+        if (format === 'pdf') {
+            content = `<embed src="http://localhost:8085/api/v1/files/download/${filename}" type="application/pdf" width="100%" height="100%" />`;
+        } else if (format === 'mp4') {
+            content = `<video controls autoplay style="width:100%; height:100%;"><source src="http://localhost:8085/api/v1/files/download/${filename}" type="video/mp4">Video nije podržan.</video>`;
+        } else {
+            content = `<div style="padding:50px; text-align:center; color:#666;">Pregled nije dostupan.</div>`;
         }
+        fullscreenModal.innerHTML += content;
+        document.body.appendChild(fullscreenModal);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeFullscreenPreview();
+        });
+    }
+
+    function closeFullscreenPreview() {
+        if (fullscreenModal) {
+            document.body.removeChild(fullscreenModal);
+            fullscreenModal = null;
+            document.removeEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeFullscreenPreview();
+            });
+        }
+    }
+
+    // Filter eventi
+    function initFilterEvents() {
+        const inputs = document.querySelectorAll('#filterPredmet, #filterRazred, #filterNaslov, #filterStatus');
+        inputs.forEach(input => input.addEventListener('input', renderMaterijale));
     }
 
     // Logout
     function logout() {
         localStorage.removeItem('jwtToken');
-        localStorage.removeItem('korisnikImePrezime');
         window.location.href = '../login.html';
     }
-
-    // Preuzimanje fajla
-    async function downloadFile(filename) {
-        if (!KORISNIK_TOKEN) {
-            alert('Nisi ulogovan!');
-            return;
-        }
-
-        try {
-            const response = await fetch(`http://localhost:8085/api/v1/files/download/${filename}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + KORISNIK_TOKEN
-                }
-            });
-
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
-            } else {
-                alert('Greška pri preuzimanju: ' + response.status);
-            }
-        } catch (err) {
-            console.error('Download greška:', err);
-            alert('Greška: ' + err.message);
-        }
-    }
-
-    // Inicijalno učitavanje
-    loadMaterijali();
 </script>
 </body>
 </html>
